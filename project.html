@@ -4,23 +4,29 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>项目 · TEKUMA 塔科玛</title>
-  <meta name="theme-color" content="#FFFFFF">
+  <meta name="theme-color" content="#E84728">
   <link rel="icon" href="assets/img/mark.svg" type="image/svg+xml">
-  <link rel="preload" href="assets/fonts/InterVariable-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/InstrumentSans-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/NotoSansSC-500.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="page-project">
-  <nav class="nav">
-    <a class="wordmark" href="./">TEKUMA</a>
-    <div class="nav-links">
-      <button type="button" data-set-lang="en">EN</button>
-      <button type="button" data-set-lang="zh">中文</button>
-      <a href="https://github.com/YUECHENCUI/tekuma-web" target="_blank" rel="noopener" data-i18n="nav.github">GitHub</a>
+  <header class="pj-hero">
+    <nav class="nav">
+      <a class="wordmark" href="./">TEKUMA</a>
+      <div class="nav-links">
+        <button type="button" data-set-lang="en">EN</button>
+        <button type="button" data-set-lang="zh">中文</button>
+        <a href="https://github.com/YUECHENCUI/tekuma-web" target="_blank" rel="noopener" data-i18n="nav.github">GitHub</a>
+      </div>
+    </nav>
+    <div class="pj-hero-body">
+      <a class="pj-back" href="./#map"><span aria-hidden="true">←</span><span data-i18n="project.back">返回项目地图</span></a>
+      <div id="project-head"></div>
     </div>
-  </nav>
+  </header>
 
   <main class="pj" id="project">
-    <a class="pj-back" href="./#map"><span aria-hidden="true">←</span><span data-i18n="project.back">返回项目地图</span></a>
     <div id="project-body"></div>
   </main>
 

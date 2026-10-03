@@ -10,12 +10,10 @@
       var items = T.t('service.' + s.key + '.items');
       return '' +
         '<article class="service">' +
-          '<p class="service-index">' + T.esc(T.t('service.label')) + ' 0' + (i + 1) + '</p>' +
-          '<h2 class="service-title">' + T.esc(T.t('service.brand')) + '<span class="sep">|</span>' + T.esc(T.t('service.' + s.key)) + '</h2>' +
+          '<p class="service-index"><span class="num">0' + (i + 1) + '</span><span>' + T.esc(T.t('service.label')) + '</span></p>' +
+          '<h2 class="service-title"><span class="brand">' + T.esc(T.t('service.brand')) + '</span><span class="name">' + T.esc(T.t('service.' + s.key)) + '</span></h2>' +
           '<p class="service-text">' + T.esc(T.t('service.' + s.key + '.text')) + '</p>' +
-          '<ul class="service-items">' + items.map(function (it) {
-            return '<li><span class="plus" aria-hidden="true">+</span>' + T.esc(it) + '</li>';
-          }).join('') + '</ul>' +
+          '<ul class="service-items">' + items.map(function (it) { return '<li>' + T.esc(it) + '</li>'; }).join('') + '</ul>' +
         '</article>';
     }).join('');
   }

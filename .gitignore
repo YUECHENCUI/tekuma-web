@@ -2,3 +2,5 @@
 node_modules/
 *.log
 brief/
+assets/fonts/src/
+__pycache__/

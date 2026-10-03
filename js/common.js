@@ -1,5 +1,5 @@
 /* ==========================================================================
-   TEKUMA · shared helpers: site config, language switching, grain effect
+   TEKUMA · shared helpers: site config, language switching
    ========================================================================== */
 (function () {
   'use strict';
@@ -98,61 +98,8 @@
     if (b) { e.preventDefault(); setLang(b.getAttribute('data-set-lang')); }
   });
 
-  /* ---- Grain: red → white "spray" dissolve, painted on <canvas class="grain"> ----
-     data-fade="down": transparent at top, white at bottom (end of the red hero)
-     data-fade="up":   white at top, transparent at bottom (start of the red section) */
-  function paintGrain(canvas) {
-    var r = canvas.getBoundingClientRect();
-    var w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
-    canvas.width = w; canvas.height = h;   // 1 grain = 1 CSS px
-    var ctx = canvas.getContext('2d');
-    var img = ctx.createImageData(w, h), d = img.data;
-    var down = canvas.getAttribute('data-fade') !== 'up';
-    for (var y = 0; y < h; y++) {
-      var u = y / (h - 1);                 // 0 → 1 from top to bottom
-      if (!down) u = 1 - u;                // u: 0 = red side, 1 = white side
-      var s = u * u * (3 - 2 * u);         // smoothstep
-      var g = Math.pow(s, 1.35);           // base white amount
-      var amp = 1.15 * Math.pow(Math.sin(Math.PI * g), 0.8); // noise strongest mid-fade, zero at both ends
-      for (var x = 0; x < w; x++) {
-        var a = g + (Math.random() - 0.5) * amp;
-        if (a <= 0) continue;
-        var i = (y * w + x) * 4;
-        d[i] = d[i + 1] = d[i + 2] = 255;
-        d[i + 3] = a >= 1 ? 255 : a * 255;
-      }
-    }
-    ctx.putImageData(img, 0, 0);
-  }
-
-  /* Repaint when a grain canvas really changes size (rotation, window resize).
-     Painted at 1 canvas px per CSS px and scaled with image-rendering: pixelated, so it stays
-     crisp on retina screens while the pixel loop stays small on phones. */
-  var painted = new WeakMap();
-  function maybePaint(canvas) {
-    var r = canvas.getBoundingClientRect(), last = painted.get(canvas);
-    if (last && Math.abs(last.w - r.width) < 2 && Math.abs(last.h - r.height) < 24) return;
-    painted.set(canvas, { w: r.width, h: r.height });
-    paintGrain(canvas);
-  }
-  function initGrain() {
-    var list = document.querySelectorAll('canvas.grain');
-    list.forEach(maybePaint);
-    if (window.ResizeObserver) {
-      var t;
-      var ro = new ResizeObserver(function (entries) {
-        clearTimeout(t);
-        t = setTimeout(function () { list.forEach(maybePaint); }, 150);
-      });
-      list.forEach(function (c) { ro.observe(c); });
-    } else {
-      window.addEventListener('resize', function () { list.forEach(maybePaint); });
-    }
-  }
-
   document.addEventListener('DOMContentLoaded', function () {
     apply();
-    initGrain();
   });
 
   window.TEKUMA = {
@@ -169,10 +116,6 @@
         if (!r.ok) throw new Error('projects.json ' + r.status);
         return r.json();
       }).then(function (d) { return d.projects || d; });
-    },
-    service: function (key) {
-      for (var i = 0; i < SITE.services.length; i++) if (SITE.services[i].key === key) return SITE.services[i];
-      return SITE.services[0];
     }
   };
 })();

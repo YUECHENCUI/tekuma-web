@@ -4,18 +4,14 @@
 # Sources:
 #   China (official standard boundary incl. Taiwan, South Tibet, Aksai Chin, nine-dash line):
 #     Alibaba DataV  https://geo.datav.aliyun.com/areas_v3/bound/{adcode}.json
-#   World land: Natural Earth via world-atlas  https://cdn.jsdelivr.net/npm/world-atlas@2/land-50m.json
+#   Then derives data/geo/overlay.json (what the map actually loads) via scripts/build-overlay.js.
 set -euo pipefail
 TMP=$(mktemp -d)
 DATAV=https://geo.datav.aliyun.com/areas_v3/bound
 for code in 100000_full 110000_full 120000_full 130000_full 310000_full 320000_full 330000_full 340000_full 440000_full 810000 820000; do
   curl -sSf -o "$TMP/$code.json" "$DATAV/$code.json"
 done
-curl -sSfL -o "$TMP/land-50m.json" https://cdn.jsdelivr.net/npm/world-atlas@2/land-50m.json
 MS="${MAPSHAPER:-npx --yes mapshaper@0}"
-
-# 1) World land (one merged silhouette, no country borders on purpose)
-$MS -i "$TMP/land-50m.json" -explode -filter "this.bounds[3] > -60" -dissolve -simplify 40% keep-shapes -o format=topojson quantization=1e5 data/geo/world-land.json
 
 # 2) China provinces + nine-dash line (DataV, official boundary)
 $MS -i "$TMP/100000_full.json" \
@@ -33,4 +29,5 @@ $MS -i "$TMP"/{110000_full,120000_full,130000_full,310000_full,320000_full,33000
   -simplify 25% keep-shapes \
   -o format=topojson quantization=1e5 data/geo/china-cities.json
 rm -rf "$TMP"
+node scripts/build-overlay.js
 ls -la data/geo

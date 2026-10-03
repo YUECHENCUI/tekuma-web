@@ -3,6 +3,7 @@
   'use strict';
   var T = window.TEKUMA;
   var root = document.getElementById('project-body');
+  var head = document.getElementById('project-head');
   var id = new URLSearchParams(location.search).get('id');
   var all = [];
 
@@ -23,8 +24,8 @@
     for (var k = 0; k < all.length; k++) if (all[k].id === id) i = k;
     if (i < 0) {
       document.title = T.t('project.notfound') + ' · TEKUMA';
-      root.innerHTML = '<div class="pj-head"><div></div><div><h1 class="pj-title">' + T.esc(T.t('project.notfound')) + '</h1>' +
-        '<p class="pj-summary">' + T.esc(T.t('project.notfound.text')) + '</p></div></div>';
+      head.innerHTML = '<h1 class="pj-title">' + T.esc(T.t('project.notfound')) + '</h1>';
+      root.innerHTML = '<div class="pj-head"><div></div><p class="pj-summary">' + T.esc(T.t('project.notfound.text')) + '</p></div>';
       return;
     }
     var p = all[i];
@@ -35,6 +36,10 @@
     var gallery = p.gallery || [];
 
     document.title = T.field(p, 'name') + ' · TEKUMA';
+    head.innerHTML =
+      '<p class="pj-kicker"><span>' + T.esc(T.t('service.brand')) + ' · ' + T.esc(T.t('service.' + p.service)) + '</span><span class="yr">' + p.year + '</span></p>' +
+      '<h1 class="pj-title">' + T.esc(T.field(p, 'name')) + '</h1>' +
+      (p.example ? '<span class="pj-sample">' + T.esc(T.t('project.sample')) + '</span>' : '');
     root.innerHTML =
       cover(p) +
       '<div class="pj-head">' +
@@ -46,9 +51,6 @@
           row(T.t('project.coords'), coords(p)) +
         '</dl>' +
         '<div>' +
-          '<p class="pj-kicker">' + T.esc(T.t('service.brand')) + ' | ' + T.esc(T.t('service.' + p.service)) + '</p>' +
-          '<h1 class="pj-title">' + T.esc(T.field(p, 'name')) + '</h1>' +
-          (p.example ? '<span class="pj-sample">' + T.esc(T.t('project.sample')) + '</span>' : '') +
           '<p class="pj-summary">' + T.esc(T.field(p, 'summary')) + '</p>' +
           '<div class="pj-body">' + body.map(function (para) { return '<p>' + T.esc(para) + '</p>'; }).join('') + '</div>' +
         '</div>' +

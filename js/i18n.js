@@ -13,13 +13,12 @@ window.TEKUMA_I18N = {
     'nav.github': 'GitHub',
 
     /* P1 · Hero */
-    'hero.title': 'TEKUMA 塔科玛',
     'hero.intro': [
       '塔科玛是一个领先的城市创新咨询公司，桥接战略与设计，',
       '帮助政府、开发商和利益相关者塑造韧性、繁荣且富有启发性的城市。',
       '致力于构建全球城市空间的叙事资产，推动城市文明的进化。'
     ],
-    'hero.cta': ['查看', '项目地图'],
+    'hero.cta': '项目地图',
 
     /* P2 · Project map */
     'map.title': '项目地图',
@@ -35,9 +34,16 @@ window.TEKUMA_I18N = {
     'map.view': '查看项目',
     'map.zoom': '放大查看',
     'map.more': '另有 {n} 个项目',
-    'map.credit': '地图数据：阿里云 DataV · Natural Earth',
+    'map.credit': '地图数据 © OpenStreetMap 贡献者 · Protomaps · 阿里云 DataV',
+    'map.hint.pc': '按住 Ctrl 并滚动以缩放地图',
+    'map.hint.mac': '按住 ⌘ 并滚动以缩放地图',
+    'map.hint.touch': '双指移动或缩放地图',
+    'map.zoomin': '放大',
+    'map.zoomout': '缩小',
+    'map.nowebgl': '当前浏览器无法显示交互地图',
 
     /* P3 · About + services */
+    'about.kicker': '关于塔科玛',
     'about.intro': [
       '塔科玛是一个加速城市创新的引擎，由一群技术专家、未来学家和设计师驱动。',
       '从初步战略制定到实施，我们的跨学科团队在四个综合实践领域提供端到端的咨询服务。'
@@ -49,7 +55,7 @@ window.TEKUMA_I18N = {
     'service.innovation': '创新',
     'service.incubation': '孵化',
     'service.strategy.text': '我们融汇数十年城市营造的艺术与科学经验，结合前沿技术与城市数据分析，为区域、城市与场所的转型制定清晰且可落地的战略。',
-    'service.strategy.items': ['城市创新与概念战略', '空间与数字战略', '财务战略'],
+    'service.strategy.items': ['城市创新与概念战略', '城市品牌与叙事战略', '空间与数字战略', '财务战略'],
     'service.design.text': '我们以整体性的设计思维，将场所的固有禀赋与其未来潜能相交融，制定兼具美学品质、数字赋能与文化敏感性的功能性开发方案。',
     'service.design.items': ['总体规划', '城市设计'],
     'service.innovation.text': '创新实验室携手麻省理工学院、哈佛大学等顶尖城市研究机构的思想者与创造者，推动城市设计迈向未来，释放其变革潜能。',
@@ -80,12 +86,11 @@ window.TEKUMA_I18N = {
 
     'nav.github': 'GitHub',
 
-    'hero.title': 'TEKUMA 塔科玛',
     'hero.intro': [
       'A leading urban innovation consultancy bridging strategy and design to help ambitious governments, developers, and stakeholders shape cities that are resilient, prosperous, and inspiring.',
       'Committed to building narrative assets for urban spaces worldwide and advancing the evolution of urban civilization.'
     ],
-    'hero.cta': ['See', 'Project Map'],
+    'hero.cta': 'Project Map',
 
     'map.title': 'Project Map',
     'map.region.global': 'Global',
@@ -100,8 +105,15 @@ window.TEKUMA_I18N = {
     'map.view': 'View project',
     'map.zoom': 'Zoom in',
     'map.more': '{n} more',
-    'map.credit': 'Map data: Alibaba DataV · Natural Earth',
+    'map.credit': 'Map data © OpenStreetMap contributors · Protomaps · Alibaba DataV',
+    'map.hint.pc': 'Ctrl + scroll to zoom the map',
+    'map.hint.mac': '⌘ + scroll to zoom the map',
+    'map.hint.touch': 'Use two fingers to move the map',
+    'map.zoomin': 'Zoom in',
+    'map.zoomout': 'Zoom out',
+    'map.nowebgl': 'This browser cannot display the interactive map',
 
+    'about.kicker': 'About TEKUMA',
     'about.intro': [
       'We are an engine for accelerating urban innovation powered by a group of technologists, futurists and designers.',
       'From initial strategy through to implementation, our interdisciplinary team delivers end-to-end advisory across four integrated practice areas.'
@@ -113,7 +125,7 @@ window.TEKUMA_I18N = {
     'service.innovation': 'Innovation',
     'service.incubation': 'Incubation',
     'service.strategy.text': 'We draw on decades of experience in the art and science of city-making, cutting-edge technology and urban analytics to create clear and actionable strategies for transforming regions, cities and places.',
-    'service.strategy.items': ['Urban Innovation & Concept Strategy', 'Spatial & Digital Strategy', 'Financial Strategy'],
+    'service.strategy.items': ['Urban Innovation & Concept Strategy', 'City Branding & Narrative Strategy', 'Spatial & Digital Strategy', 'Financial Strategy'],
     'service.design.text': 'We cross the inherent attributes of a place with its future potentials by taking a holistic approach to design, formulating functional development solutions that are aesthetically beautiful, digitally enabled, and culturally sensitive.',
     'service.design.items': ['Master Planning', 'Urban Design'],
     'service.innovation.text': 'By collaborating with thinkers and creators from leading urban research institutions, including MIT and Harvard, the Innovation Lab propels urban design into the future, transforming its potential.',
