@@ -25,7 +25,6 @@ window.TEKUMA_I18N = {
     'map.title': '项目地图',
     'map.region.global': '全球',
     'map.region.china': '中国',
-    'map.region.beijing': '北京',
     'map.region.jjj': '京津冀城市群',
     'map.region.yrd': '长三角城市群',
     'map.region.gba': '粤港澳大湾区',
@@ -37,7 +36,6 @@ window.TEKUMA_I18N = {
     'map.zoom': '放大查看',
     'map.more': '另有 {n} 个项目',
     'map.credit': '地图数据：阿里云 DataV · Natural Earth',
-    'map.legend': '服务类别',
 
     /* P3 · About + services */
     'about.intro': [
@@ -92,7 +90,6 @@ window.TEKUMA_I18N = {
     'map.title': 'Project Map',
     'map.region.global': 'Global',
     'map.region.china': 'China',
-    'map.region.beijing': 'Beijing',
     'map.region.jjj': 'Jing-Jin-Ji',
     'map.region.yrd': 'Yangtze River Delta',
     'map.region.gba': 'Greater Bay Area',
@@ -104,7 +101,6 @@ window.TEKUMA_I18N = {
     'map.zoom': 'Zoom in',
     'map.more': '{n} more',
     'map.credit': 'Map data: Alibaba DataV · Natural Earth',
-    'map.legend': 'Services',
 
     'about.intro': [
       'We are an engine for accelerating urban innovation powered by a group of technologists, futurists and designers.',

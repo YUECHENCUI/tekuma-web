@@ -7,19 +7,18 @@
   /* ---- Site-wide settings (edit here) ----------------------------------- */
   var SITE = {
     defaultLang: 'zh',
-    // Service categories: order = order on the page and in the map legend.
-    // `mark` controls the map symbol: fill/ring × red/black (brand palette only).
+    // Service categories: order = order of the columns on the home page (P3).
+    // The map does not distinguish services; a project's service is shown as text in its card / page.
     services: [
-      { key: 'strategy',   mark: 'fill', color: '#E84728' },
-      { key: 'design',     mark: 'fill', color: '#111111' },
-      { key: 'innovation', mark: 'ring', color: '#E84728' },
-      { key: 'incubation', mark: 'ring', color: '#111111' }
+      { key: 'strategy' },
+      { key: 'design' },
+      { key: 'innovation' },
+      { key: 'incubation' }
     ],
     // Map regions (filter + camera). `abbr` is shown as a small code.
     regions: [
       { key: 'global' },
       { key: 'china' },
-      { key: 'beijing' },
       { key: 'jjj', abbr: 'JJJ' },
       { key: 'yrd', abbr: 'YRD' },
       { key: 'gba', abbr: 'GBA' }

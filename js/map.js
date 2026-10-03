@@ -12,7 +12,7 @@
     land: '#EFEFEF',        // world land
     china: '#E3E3E3',       // China (official DataV boundary)
     active: '#D6D6D6',      // provinces with projects (China view)
-    focus: '#E0E0E0',       // city cluster in focus (JJJ / YRD / GBA / Beijing)
+    focus: '#E0E0E0',       // city cluster in focus (JJJ / YRD / GBA)
     border: '#FFFFFF',      // province & city borders
     outline: '#D2D2D2',     // China national boundary hairline
     dash: '#B4B4B4'         // South China Sea nine-dash line
@@ -20,7 +20,8 @@
   var GLOBAL_CENTER = 150;  // central meridian of the world view (150°E, as on Chinese standard world maps)
   var PORTRAIT_CENTER = 100; // on tall screens the world view is cropped around this meridian (drag to pan)
   var GLOBAL_LAT = [-50, 76];
-  var DEPTH = { global: 0, china: 1, jjj: 2, yrd: 2, gba: 2, beijing: 3 };
+  var DEPTH = { global: 0, china: 1, jjj: 2, yrd: 2, gba: 2 };
+  var REGION_ALIAS = { beijing: 'jjj', bj: 'jjj', tianjin: 'jjj', hebei: 'jjj' };   // retired / informal keys in old links
   var COMPACT_QUERY = '(max-width: 680px), (max-height: 540px)';   // keep in sync with css/style.css
 
   /* ---- State ------------------------------------------------------------- */
@@ -42,7 +43,7 @@
   var W = 0, H = 0, DPR = 1;
   var geo = {};
   var projects = [];
-  var state = { region: 'global', year: 'all', services: new Set(T.SITE.services.map(function (s) { return s.key; })) };
+  var state = { region: 'global', year: 'all' };
   var view = null, home = null;     // current camera {rot, lng, lat, k, cx, cy} and the fitted one
   var focus = { region: 'global', t: 1, prev: null };
   var groups = [];
@@ -72,7 +73,7 @@
     var compact = mqCompact.matches;
     var edge = compact ? 14 : Math.max(28, Math.min(64, W * 0.03));
     var gap = compact ? 10 : 28;
-    var els = [filters.classList.contains('is-open') ? toggle : filters, section.querySelector('.map-legend'), section.querySelector('.map-foot')];
+    var els = [filters.classList.contains('is-open') ? toggle : filters, section.querySelector('.map-foot')];
     var rs = els.map(function (el) {
       var r = rel(el.classList.contains('map-foot') ? el.querySelector('.map-count') : el);
       return r;
@@ -148,13 +149,18 @@
   }
 
   /* ---- Basemap (canvas) --------------------------------------------------- */
+  /* The canvas and the SVG are sized in CSS pixels by JS — never by percentage CSS — and the
+     backing store, CSS box and viewBox are always updated together in one go. So when the
+     section changes size (mobile URL bar / in-app toolbars, rotation, window resize) the browser
+     never scales an old bitmap or viewBox to the new box: no stretched frame, ever. */
   function resizeCanvas() {
     var r = section.getBoundingClientRect();
-    W = r.width; H = r.height;
+    W = Math.round(r.width); H = Math.round(r.height);
     // cap the backing store: ≤2× density and ≤ ~8 MP, so phones and 4K screens stay smooth
     DPR = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(8e6 / Math.max(1, W * H)));
     canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
-    svg.attr('viewBox', '0 0 ' + W + ' ' + H);
+    canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+    svg.attr('width', W).attr('height', H).attr('viewBox', '0 0 ' + W + ' ' + H).attr('preserveAspectRatio', 'xMinYMin meet');
   }
 
   function focusAlpha(region) {
@@ -173,14 +179,14 @@
 
     ctx.beginPath(); path(geo.land); ctx.fillStyle = STYLE.land; ctx.fill();
     // in city-cluster views everything outside the focus recedes towards the land colour
-    var deep = Math.min(1, focusAlpha('jjj') + focusAlpha('yrd') + focusAlpha('gba') + focusAlpha('beijing'));
+    var deep = Math.min(1, focusAlpha('jjj') + focusAlpha('yrd') + focusAlpha('gba'));
     ctx.beginPath(); path(geo.provinces); ctx.fillStyle = d3.interpolateRgb(STYLE.china, STYLE.land)(deep * 0.75); ctx.fill();
 
     var ac = focusAlpha('china');
     if (ac > 0 && geo.activeProvinces) {
       ctx.globalAlpha = ac; ctx.beginPath(); path(geo.activeProvinces); ctx.fillStyle = STYLE.active; ctx.fill(); ctx.globalAlpha = 1;
     }
-    ['jjj', 'yrd', 'gba', 'beijing'].forEach(function (r) {
+    ['jjj', 'yrd', 'gba'].forEach(function (r) {
       var a = focusAlpha(r);
       if (a <= 0) return;
       ctx.globalAlpha = a; ctx.beginPath(); path(geo.regionShapes[r]); ctx.fillStyle = STYLE.focus; ctx.fill(); ctx.globalAlpha = 1;
@@ -206,8 +212,7 @@
   function visibleProjects(region) {
     return projects.filter(function (p) {
       return inRegion(p, region || state.region) &&
-        (state.year === 'all' || +p.year === +state.year) &&
-        state.services.has(p.service);
+        (state.year === 'all' || +p.year === +state.year);
     });
   }
 
@@ -258,7 +263,7 @@
 
   function deeperRegion(g) {
     var cur = DEPTH[state.region], best = null;
-    ['china', 'jjj', 'yrd', 'gba', 'beijing'].forEach(function (r) {
+    ['china', 'jjj', 'yrd', 'gba'].forEach(function (r) {
       if (DEPTH[r] > cur && g.projects.every(function (p) { return inRegion(p, r); })) {
         if (!best || DEPTH[r] > DEPTH[best]) best = r;   // deepest region that contains all members
       }
@@ -280,10 +285,9 @@
       c.append('line').attr('y1', -cs).attr('y2', cs);
       c.append('circle').attr('r', 2.2 * s).attr('fill', 'var(--red)');
     } else {
-      var sv = T.service(g.projects[0].service);
-      var dot = sel.append('circle').attr('class', 'dot').attr('r', (sv.mark === 'ring' ? 3.4 : 3.8) * s);
-      if (sv.mark === 'ring') dot.attr('fill', '#fff').attr('stroke', sv.color).attr('stroke-width', 1.4 * s);
-      else dot.attr('fill', sv.color);
+      // one uniform marker for every project: brand-red dot with a fine white keyline
+      sel.append('circle').attr('class', 'dot').attr('r', 3.6 * s)
+        .attr('fill', 'var(--red)').attr('stroke', '#fff').attr('stroke-width', 1.2 * s).attr('paint-order', 'stroke');
     }
   }
 
@@ -380,7 +384,7 @@
   }
 
   function uiRects() {
-    var els = [mqCompact.matches ? toggle : filters, section.querySelector('.map-legend'), section.querySelector('.map-count'), section.querySelector('.map-credit')];
+    var els = [mqCompact.matches ? toggle : filters, section.querySelector('.map-count'), section.querySelector('.map-credit')];
     return els.filter(function (el) { return el && el.offsetParent !== null; }).map(rel);
   }
 
@@ -392,12 +396,6 @@
     if (e.key === 'Escape') { hideCard(); setPanel(false); }
   });
 
-  function legendSwatch(key, size) {
-    var s = T.service(key), r = size || 3.6;
-    return '<svg width="' + (r * 2 + 2) + '" height="' + (r * 2 + 2) + '" viewBox="' + (-r - 1) + ' ' + (-r - 1) + ' ' + (r * 2 + 2) + ' ' + (r * 2 + 2) + '" aria-hidden="true">' +
-      (s.mark === 'ring' ? '<circle r="' + (r - .7) + '" fill="#fff" stroke="' + s.color + '" stroke-width="1.4"/>' : '<circle r="' + r + '" fill="' + s.color + '"/>') + '</svg>';
-  }
-
   function href(p) { return 'project.html?id=' + encodeURIComponent(p.id); }
 
   function showCard(g, pin) {
@@ -407,7 +405,7 @@
     var ps = g.projects, html;
     if (ps.length === 1) {
       var p = ps[0];
-      html = '<p class="k">' + legendSwatch(p.service) + T.esc(T.t('service.' + p.service)) + '</p>' +
+      html = '<p class="k">' + T.esc(T.t('service.brand')) + '<span class="sep">|</span>' + T.esc(T.t('service.' + p.service)) + '</p>' +
         '<h3><a href="' + href(p) + '">' + T.esc(T.field(p, 'name')) + '</a></h3>' +
         '<p class="meta">' + T.esc(T.field(p, 'city')) + ' · ' + p.year + '</p>' +
         '<a class="go" href="' + href(p) + '">' + T.esc(T.t('map.view')) + ' <span>→</span></a>';
@@ -415,7 +413,7 @@
       var deeper = deeperRegion(g);
       html = '<p class="k">' + T.esc(groupLabel(g)) + ' · ' + T.esc(T.t('map.count', { n: ps.length })) + '</p><ul>' +
         ps.slice(0, 6).map(function (p) {
-          return '<li><a href="' + href(p) + '">' + legendSwatch(p.service, 3.2) + '<span>' + T.esc(T.field(p, 'name')) + '</span><span class="yr">' + p.year + '</span></a></li>';
+          return '<li><a href="' + href(p) + '"><span>' + T.esc(T.field(p, 'name')) + '<small>' + T.esc(T.t('service.' + p.service)) + '</small></span><span class="yr">' + p.year + '</span></a></li>';
         }).join('') + '</ul>' +
         (ps.length > 6 ? '<p class="meta more">' + T.esc(T.t('map.more', { n: ps.length - 6 })) + '</p>' : '') +
         (deeper ? '<button type="button" class="zoom" data-region="' + deeper + '">' + T.esc(T.t('map.zoom')) + ' →</button>' : '');
@@ -474,12 +472,6 @@
     years.innerHTML = T.SITE.years.map(function (y) {
       return '<li><button type="button" data-year="' + y + '">' + (y === 'all' ? T.esc(T.t('map.year.all')) : y) + '</button></li>';
     }).join('');
-    var legend = section.querySelector('.map-legend');
-    legend.setAttribute('aria-label', T.t('map.legend'));
-    legend.innerHTML = T.SITE.services.map(function (s) {
-      return '<li><button type="button" data-service="' + s.key + '" aria-pressed="' + state.services.has(s.key) + '">' +
-        legendSwatch(s.key) + T.esc(T.t('service.' + s.key)) + '</button></li>';
-    }).join('');
     syncControls();
   }
 
@@ -492,7 +484,6 @@
       var on = b.getAttribute('data-year') === String(state.year);
       b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on);
     });
-    section.querySelectorAll('[data-service]').forEach(function (b) { b.setAttribute('aria-pressed', state.services.has(b.getAttribute('data-service'))); });
     toggle.querySelector('.sum').textContent = T.t('map.region.' + state.region) + ' · ' + (state.year === 'all' ? T.t('map.year.all') : state.year);
     var n = visibleProjects().length;
     var sample = projects.some(function (p) { return p.example; });
@@ -506,24 +497,17 @@
   }
 
   section.addEventListener('click', function (e) {
-    var b = e.target.closest('.map-filter-cols button, .map-legend button');
+    var b = e.target.closest('.map-filter-cols button');
     if (!b) {
       if (!card.contains(e.target) && !filters.contains(e.target)) { hideCard(); setPanel(false); }
       return;
     }
     if (b.dataset.region) { setPanel(false); setRegion(b.dataset.region); }
     if (b.dataset.year) { state.year = b.dataset.year === 'all' ? 'all' : +b.dataset.year; setPanel(false); refresh(); }
-    if (b.dataset.service) {
-      // first click isolates one service; further clicks add/remove; emptying resets to all
-      var k = b.dataset.service, allKeys = T.SITE.services.map(function (s) { return s.key; });
-      if (state.services.size === allKeys.length) state.services = new Set([k]);
-      else if (state.services.has(k)) state.services.delete(k); else state.services.add(k);
-      if (!state.services.size) state.services = new Set(allKeys);
-      refresh();
-    }
   });
 
   function setRegion(r) {
+    r = REGION_ALIAS[r] || r;
     if (!DEPTH.hasOwnProperty(r)) return;
     hideCard();
     var target = home = fitView(r);
@@ -561,7 +545,7 @@
   /* ---- Drag to pan (mouse: any direction · touch: horizontal only, so vertical swipes still scroll the page) ---- */
   var drag = null;
   section.addEventListener('pointerdown', function (e) {
-    if (!view || anim || e.button > 0 || e.target.closest('.map-filters, .map-legend, .map-card, .mk')) return;
+    if (!view || anim || e.button > 0 || e.target.closest('.map-filters, .map-card, .mk')) return;
     drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy, moved: false, touch: e.pointerType !== 'mouse' };
   });
   window.addEventListener('pointermove', function (e) {
@@ -588,9 +572,11 @@
   window.addEventListener('pointercancel', endDrag);
 
   /* ---- Boot --------------------------------------------------------------- */
+  var fitW = 0, fitH = 0;                 // section size the camera was last framed for
   function onResize() {
     if (anim) { anim.stop(); anim = null; focus.t = 1; }
     resizeCanvas();
+    fitW = W; fitH = H;
     geo.chinaK = fitView('china').k;
     view = home = fitView(state.region);
     groups = buildGroups(view, state.region);
@@ -617,25 +603,38 @@
     geo.cities = topojson.feature(cities, cities.objects.cities);
     geo.cityMesh = topojson.mesh(cities, cities.objects.cities, function (a, b) { return a !== b; });
     geo.regionShapes = {};
-    ['jjj', 'yrd', 'gba', 'beijing'].forEach(function (r) {
+    ['jjj', 'yrd', 'gba'].forEach(function (r) {
       geo.regionShapes[r] = { type: 'FeatureCollection', features: geo.cities.features.filter(function (f) { return f.properties.tags.indexOf(r) > -1; }) };
     });
     renderControls();
     updateActiveProvinces();
     onResize();
-    // re-fit on real size changes (rotation, window resize) but ignore mobile URL-bar jitter
-    var lastW = W, lastH = H, rt;
-    function maybeResize() {
+    /* Size changes, in two steps:
+       1. immediately (ResizeObserver runs after layout, before paint): resize canvas + SVG and
+          redraw the current camera — so not a single frame shows a scaled bitmap;
+       2. debounced: re-frame the camera only for real changes (width / orientation / window
+          resize). Mobile URL-bar or in-app-toolbar height jitter (touch devices, < 25% of the
+          height) keeps the camera as is: the map simply reveals / hides a sliver at the bottom. */
+    var rt;
+    function onSizeChange() {
+      var r = section.getBoundingClientRect();
+      var w = Math.round(r.width), h = Math.round(r.height);
+      if (w === W && h === H) return;
+      resizeCanvas();                              // camera unchanged until the debounced re-fit
+      draw();
       clearTimeout(rt);
       rt = setTimeout(function () {
-        var r = section.getBoundingClientRect();
-        if (Math.abs(r.width - lastW) < 2 && Math.abs(r.height - lastH) < 60) return;
-        lastW = r.width; lastH = r.height; setPanel(false); hideCard(); onResize();
-      }, 180);
+        var dw = Math.abs(W - fitW), dh = Math.abs(H - fitH);
+        var jitter = !mqFine.matches && dw < 2 && dh < fitH * 0.25;
+        if (jitter) { if (!anim && !drag) renderLabels(); return; }
+        if (dw < 2 && dh < 2) return;
+        setPanel(false); hideCard(); onResize();
+      }, 160);
     }
-    if (window.ResizeObserver) new ResizeObserver(maybeResize).observe(section);
-    else window.addEventListener('resize', maybeResize);
+    if (window.ResizeObserver) new ResizeObserver(onSizeChange).observe(section);
+    else window.addEventListener('resize', onSizeChange);
     var qr = new URLSearchParams(location.search).get('region');
+    if (qr) qr = REGION_ALIAS[qr.toLowerCase()] || qr.toLowerCase();
     if (qr && qr !== 'global' && DEPTH.hasOwnProperty(qr)) setRegion(qr);
   }).catch(function (err) {
     console.error('[TEKUMA map]', err);
