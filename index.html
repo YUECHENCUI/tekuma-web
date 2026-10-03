@@ -44,8 +44,13 @@
       <svg class="map-overlay"></svg>
 
       <div class="map-filters">
+        <button type="button" class="map-filter-toggle" aria-expanded="false" aria-controls="map-filter-panel">
+          <span class="k" data-i18n="map.title">项目地图</span>
+          <span class="sum"></span>
+          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M1 3l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+        </button>
         <p class="map-kicker" data-i18n="map.title">项目地图</p>
-        <div class="map-filter-cols">
+        <div class="map-filter-cols" id="map-filter-panel">
           <ul class="map-regions" role="list"></ul>
           <ul class="map-years" role="list"></ul>
         </div>

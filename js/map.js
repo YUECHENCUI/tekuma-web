@@ -11,17 +11,17 @@
   var STYLE = {
     land: '#EFEFEF',        // world land
     china: '#E3E3E3',       // China (official DataV boundary)
-    active: '#D6D6D6',      // provinces / cities that are in focus
+    active: '#D6D6D6',      // provinces with projects (China view)
     focus: '#E0E0E0',       // city cluster in focus (JJJ / YRD / GBA / Beijing)
     border: '#FFFFFF',      // province & city borders
     outline: '#D2D2D2',     // China national boundary hairline
-    dash: '#B4B4B4',        // South China Sea nine-dash line
-    leader: '#A3A3A3'
+    dash: '#B4B4B4'         // South China Sea nine-dash line
   };
   var GLOBAL_CENTER = 150;  // central meridian of the world view (150°E, as on Chinese standard world maps)
+  var PORTRAIT_CENTER = 100; // on tall screens the world view is cropped around this meridian (drag to pan)
   var GLOBAL_LAT = [-50, 76];
   var DEPTH = { global: 0, china: 1, jjj: 2, yrd: 2, gba: 2, beijing: 3 };
-  var CLUSTER_PX = 22;      // markers closer than this (px) merge into one group
+  var COMPACT_QUERY = '(max-width: 680px), (max-height: 540px)';   // keep in sync with css/style.css
 
   /* ---- State ------------------------------------------------------------- */
   var section = document.getElementById('map');
@@ -32,17 +32,26 @@
   var gLabels = svg.append('g').attr('class', 'labels');
   var gMarks = svg.append('g').attr('class', 'marks');
   var card = section.querySelector('.map-card');
-  var hoverCapable = window.matchMedia('(hover: hover)').matches;
+  var filters = section.querySelector('.map-filters');
+  var toggle = section.querySelector('.map-filter-toggle');
+
+  var mqCompact = window.matchMedia(COMPACT_QUERY);
+  var mqFine = window.matchMedia('(hover: hover) and (pointer: fine)');
+  var mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
 
   var W = 0, H = 0, DPR = 1;
-  var geo = {};            // land, provinces, provMesh, nineDash, cities, cityMesh
+  var geo = {};
   var projects = [];
   var state = { region: 'global', year: 'all', services: new Set(T.SITE.services.map(function (s) { return s.key; })) };
-  var view = null;          // current camera {rot, lng, lat, k, cx, cy}
+  var view = null, home = null;     // current camera {rot, lng, lat, k, cx, cy} and the fitted one
   var focus = { region: 'global', t: 1, prev: null };
   var groups = [];
   var anim = null;
   var measureCtx = document.createElement('canvas').getContext('2d');
+
+  function labelSize() { return parseFloat(getComputedStyle(section).getPropertyValue('--label')) || 11; }
+  function markScale() { return labelSize() / 11; }
+  function clusterPx() { return (mqFine.matches ? 22 : 30) * markScale(); }
 
   /* ---- Projection / camera ------------------------------------------------ */
   function projectionFor(v) {
@@ -51,11 +60,34 @@
     return p.translate([v.cx - c[0], v.cy - c[1]]);
   }
 
-  function padding() {
-    var mobile = W < 760;
-    if (mobile) return { t: 150, r: 20, b: 96, l: 20 };
-    var ui = section.querySelector('.map-filters').getBoundingClientRect();
-    return { t: 110, r: 64, b: 70, l: Math.min(ui.width + 72, W * 0.28) };
+  function rel(el) {
+    var b = section.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { x0: r.left - b.left, x1: r.right - b.left, y0: r.top - b.top, y1: r.bottom - b.top, w: r.width, h: r.height };
+  }
+
+  /* Two candidate safe areas for the map — "top band" (UI above the map) and
+     "left column" (UI beside the map). fitView picks whichever gives the bigger map,
+     so ultrawide, 5:4, iPad portrait and phones each get a sensible frame. */
+  function paddings() {
+    var compact = mqCompact.matches;
+    var edge = compact ? 14 : Math.max(28, Math.min(64, W * 0.03));
+    var gap = compact ? 10 : 28;
+    var els = [filters.classList.contains('is-open') ? toggle : filters, section.querySelector('.map-legend'), section.querySelector('.map-foot')];
+    var rs = els.map(function (el) {
+      var r = rel(el.classList.contains('map-foot') ? el.querySelector('.map-count') : el);
+      return r;
+    });
+    var f = compact ? rel(toggle) : rs[0];
+    var top = edge, topNoF = edge, bottom = edge;
+    rs.forEach(function (r, i) {
+      if (!r.w) return;
+      if ((r.y0 + r.y1) / 2 < H / 2) { top = Math.max(top, r.y1 + gap); if (i) topNoF = Math.max(topNoF, r.y1 + gap); }
+      else bottom = Math.max(bottom, H - r.y0 + gap);
+    });
+    if (compact) top = Math.max(top, f.y1 + gap);
+    var band = { t: top, r: edge, b: bottom, l: edge };
+    var col = { t: topNoF, r: edge, b: bottom, l: f.x1 + gap };
+    return compact ? [band] : [band, col];
   }
 
   function regionGeo(key) {
@@ -71,14 +103,22 @@
   function fitView(key) {
     var g = regionGeo(key);
     var rot = key === 'global' ? GLOBAL_CENTER : d3.geoCentroid(g)[0];
-    var pad = padding();
-    var aw = W - pad.l - pad.r, ah = H - pad.t - pad.b;
     var p = d3.geoNaturalEarth1().rotate([-rot, 0]).scale(1).translate([0, 0]);
-    var b = d3.geoPath(p).bounds(g);
-    var k = Math.min(aw / (b[1][0] - b[0][0]), ah / (b[1][1] - b[0][1]));
-    if (key === 'global') k = Math.min(k, W / (b[1][0] - b[0][0]) * 0.98);
+    var b = d3.geoPath(p).bounds(g), bw = b[1][0] - b[0][0], bh = b[1][1] - b[0][1];
+    var best = null;
+    paddings().forEach(function (pad) {
+      var aw = Math.max(80, W - pad.l - pad.r), ah = Math.max(80, H - pad.t - pad.b);
+      var k = Math.min(aw / bw, ah / bh);
+      if (!best || k > best.k * 1.02) best = { k: k, pad: pad, aw: aw, ah: ah };
+    });
+    var k = best.k, pad = best.pad, aw = best.aw, ah = best.ah;
     var ll = p.invert([(b[0][0] + b[1][0]) / 2, (b[0][1] + b[1][1]) / 2]);
-    if (key === 'global' && W < 760) { k *= 2.1; ll = [92, 26]; }   // portrait phones: crop the world around Asia (drag to pan)
+    if (key === 'global') {
+      // tall frames (phones, iPad portrait): crop the world instead of showing a thin strip
+      var aspect = aw / ah, worldAspect = bw / bh;
+      var zoom = Math.max(1, Math.min(2.8, worldAspect / aspect * 0.85));
+      if (zoom > 1.05) { k *= zoom; ll = [PORTRAIT_CENTER, 24]; }
+    }
     return { rot: rot, lng: ll[0], lat: ll[1], k: k, cx: pad.l + aw / 2, cy: pad.t + ah / 2 };
   }
 
@@ -87,6 +127,7 @@
   function flyTo(target, done) {
     if (anim) anim.stop();
     var v0 = view;
+    if (mqReduce.matches) { view = target; focus.t = 1; draw(); if (done) done(); return; }
     // van Wijk & Nuij smooth zoom in a planar reference space (unit projection around target meridian)
     var P = d3.geoNaturalEarth1().rotate([-target.rot, 0]).scale(1).translate([0, 0]);
     var a = P([v0.lng, v0.lat]), b = P([target.lng, target.lat]);
@@ -109,7 +150,9 @@
   /* ---- Basemap (canvas) --------------------------------------------------- */
   function resizeCanvas() {
     var r = section.getBoundingClientRect();
-    W = r.width; H = r.height; DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = r.width; H = r.height;
+    // cap the backing store: ≤2× density and ≤ ~8 MP, so phones and 4K screens stay smooth
+    DPR = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(8e6 / Math.max(1, W * H)));
     canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR);
     svg.attr('viewBox', '0 0 ' + W + ' ' + H);
   }
@@ -133,19 +176,16 @@
     var deep = Math.min(1, focusAlpha('jjj') + focusAlpha('yrd') + focusAlpha('gba') + focusAlpha('beijing'));
     ctx.beginPath(); path(geo.provinces); ctx.fillStyle = d3.interpolateRgb(STYLE.china, STYLE.land)(deep * 0.75); ctx.fill();
 
-    // provinces with projects (China view)
     var ac = focusAlpha('china');
     if (ac > 0 && geo.activeProvinces) {
       ctx.globalAlpha = ac; ctx.beginPath(); path(geo.activeProvinces); ctx.fillStyle = STYLE.active; ctx.fill(); ctx.globalAlpha = 1;
     }
-    // focused city cluster (JJJ / YRD / GBA / Beijing)
     ['jjj', 'yrd', 'gba', 'beijing'].forEach(function (r) {
       var a = focusAlpha(r);
       if (a <= 0) return;
       ctx.globalAlpha = a; ctx.beginPath(); path(geo.regionShapes[r]); ctx.fillStyle = STYLE.focus; ctx.fill(); ctx.globalAlpha = 1;
     });
 
-    // city / district borders fade in when zoomed in
     var cityA = Math.max(0, Math.min(1, (view.k / chinaK - 2.2) / 2));
     if (cityA > 0) {
       ctx.globalAlpha = cityA; ctx.beginPath(); path(geo.cityMesh);
@@ -154,7 +194,6 @@
     var provW = Math.max(0.35, Math.min(1, view.k / chinaK * 0.8));
     ctx.beginPath(); path(geo.provMesh); ctx.strokeStyle = STYLE.border; ctx.lineWidth = provW; ctx.stroke();
 
-    // national boundary (official DataV outline) as a faint hairline, so small islands stay visible
     ctx.beginPath(); path(geo.chinaOutline); ctx.strokeStyle = STYLE.outline; ctx.lineWidth = 0.5; ctx.stroke();
     ctx.beginPath(); path(geo.nineDash); ctx.fillStyle = STYLE.dash; ctx.fill();
     ctx.strokeStyle = STYLE.dash; ctx.lineWidth = 0.9; ctx.stroke();
@@ -178,18 +217,18 @@
     var out = [];
     if (region === 'global') {   // world view: countries with ≥3 projects collapse into one marker
       var byC = d3.group(list, function (p) { return p.country || p.country_en; });
-      byC.forEach(function (ps, c) {
+      byC.forEach(function (ps) {
         if (ps.length >= 3) { out.push(makeGroup(ps, 'country')); list = list.filter(function (p) { return ps.indexOf(p) < 0; }); }
       });
     }
-    // greedy pixel clustering for the rest
+    var R = clusterPx();
     var pts = list.map(function (p) { var xy = proj([p.lng, p.lat]); return { p: p, x: xy[0], y: xy[1] }; });
     var used = new Set();
     pts.forEach(function (a, i) {
       if (used.has(i)) return;
       var members = [a.p]; used.add(i);
       pts.forEach(function (b, j) {
-        if (!used.has(j) && Math.hypot(a.x - b.x, a.y - b.y) < CLUSTER_PX) { members.push(b.p); used.add(j); }
+        if (!used.has(j) && Math.hypot(a.x - b.x, a.y - b.y) < R) { members.push(b.p); used.add(j); }
       });
       out.push(makeGroup(members, 'city'));
     });
@@ -228,19 +267,22 @@
   }
 
   /* ---- Markers (svg) ------------------------------------------------------ */
+  function crossSize(g) { return (9 + Math.min(10, Math.sqrt(g.projects.length) * 3)) * markScale(); }
+
   function markShape(sel, g) {
+    var s = markScale();
     sel.selectAll('*').remove();
-    sel.append('circle').attr('class', 'hit').attr('r', 13);
+    sel.append('circle').attr('class', 'hit').attr('r', mqFine.matches ? 13 : 22);   // ≥44px tap target on touch
     if (g.projects.length > 1) {
-      var s = 9 + Math.min(10, Math.sqrt(g.projects.length) * 3);
+      var cs = crossSize(g);
       var c = sel.append('g').attr('class', 'mk-cross dot');
-      c.append('line').attr('x1', -s).attr('x2', s);
-      c.append('line').attr('y1', -s).attr('y2', s);
-      c.append('circle').attr('r', 2.2).attr('fill', 'var(--red)');
+      c.append('line').attr('x1', -cs).attr('x2', cs);
+      c.append('line').attr('y1', -cs).attr('y2', cs);
+      c.append('circle').attr('r', 2.2 * s).attr('fill', 'var(--red)');
     } else {
       var sv = T.service(g.projects[0].service);
-      var dot = sel.append('circle').attr('class', 'dot').attr('r', sv.mark === 'ring' ? 3.4 : 3.8);
-      if (sv.mark === 'ring') dot.attr('fill', '#fff').attr('stroke', sv.color).attr('stroke-width', 1.4);
+      var dot = sel.append('circle').attr('class', 'dot').attr('r', (sv.mark === 'ring' ? 3.4 : 3.8) * s);
+      if (sv.mark === 'ring') dot.attr('fill', '#fff').attr('stroke', sv.color).attr('stroke-width', 1.4 * s);
       else dot.attr('fill', sv.color);
     }
   }
@@ -249,11 +291,14 @@
     var sel = gMarks.selectAll('g.mk').data(groups, function (g) { return g.id; });
     sel.exit().transition().duration(250).style('opacity', 0).remove();
     var enter = sel.enter().append('g').attr('class', 'mk').style('opacity', 0)
-      .on('mouseenter', function (e, g) { if (hoverCapable) showCard(g, false); })
-      .on('mouseleave', function () { if (hoverCapable) hideCardSoon(); })
-      .on('click', function (e, g) { e.stopPropagation(); onMarkClick(g); });
+      .attr('role', 'button').attr('tabindex', 0)
+      .on('mouseenter', function (e, g) { if (mqFine.matches) showCard(g, false); })
+      .on('mouseleave', function () { if (mqFine.matches && !pinned) hideCardSoon(); })
+      .on('click', function (e, g) { e.stopPropagation(); onMarkClick(g); })
+      .on('keydown', function (e, g) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onMarkClick(g, true); } });
     enter.each(function (g) { markShape(d3.select(this), g); });
     enter.transition().duration(400).style('opacity', 1);
+    gMarks.selectAll('g.mk').attr('aria-label', function (g) { return groupLabel(g) + (g.projects.length > 1 ? ' · ' + g.projects.length : ''); });
     positionMarks(projectionFor(view));
   }
 
@@ -273,49 +318,49 @@
   function renderLabels() {
     gLabels.selectAll('*').remove();
     if (!groups.length) return;
-    // if several single markers would share a city label (e.g. Beijing view), show project names instead
+    var fs = labelSize(), sc = markScale();
     var counts = {};
     groups.forEach(function (g) { g.useName = false; var l = groupLabel(g); counts[l] = (counts[l] || 0) + 1; });
     groups.forEach(function (g) { if (g.projects.length === 1 && counts[groupLabel(g)] > 1) g.useName = true; });
 
     var placed = [];
     var avoid = uiRects();
-    groups.forEach(function (g) { placed.push({ x0: g.x - 5, y0: g.y - 5, x1: g.x + 5, y1: g.y + 5 }); });
+    groups.forEach(function (g) { placed.push({ x0: g.x - 5 * sc, y0: g.y - 5 * sc, x1: g.x + 5 * sc, y1: g.y + 5 * sc }); });
+    var nMarks = placed.length;
     var order = groups.slice().sort(function (a, b) { return b.projects.length - a.projects.length || a.y - b.y; });
 
     order.forEach(function (g) {
       var name = groupLabel(g), n = g.projects.length > 1 ? String(g.projects.length) : '';
-      var w = textWidth(name, 11, 500) + (n ? textWidth(n, 11, 400) + 6 : 0), h = 12;
+      var w = textWidth(name, fs, 500) + (n ? textWidth(n, fs, 400) + 6 : 0), h = fs * 1.1;
       var cands = [];
       if (g.projects.length > 1) {
-        var s = 9 + Math.min(10, Math.sqrt(g.projects.length) * 3) + 4;
+        var s = crossSize(g) + 4;
         cands.push({ tx: g.x + s, ty: g.y - s, anchor: 'bl' }, { tx: g.x + s, ty: g.y + s, anchor: 'tl' },
                    { tx: g.x - s, ty: g.y - s, anchor: 'br' }, { tx: g.x - s, ty: g.y + s, anchor: 'tr' });
       }
-      [30, 52, 76, 100, 128].forEach(function (L) {
-        cands.push({ L: -L }, { L: L });
-      });
+      [30, 52, 76, 100, 128].forEach(function (L) { cands.push({ L: -L * sc }, { L: L * sc }); });
       for (var i = 0; i < cands.length; i++) {
-        var c = cands[i], box;
+        var c = cands[i], box, left = false;
         if (c.L !== undefined) {
           var up = c.L < 0, yEnd = g.y + c.L;
-          box = { x0: g.x + 5, x1: g.x + 5 + w, y0: up ? yEnd - 1 : yEnd - h, y1: up ? yEnd + h : yEnd + 1 };
+          left = g.x + 5 + w > W - 10;              // near the right edge: put the text on the left of the leader
+          box = { x0: left ? g.x - 5 - w : g.x + 5, x1: left ? g.x - 5 : g.x + 5 + w, y0: up ? yEnd - 1 : yEnd - h, y1: up ? yEnd + h : yEnd + 1 };
         } else {
-          var left = c.anchor[1] === 'r', top = c.anchor[0] === 't';
-          box = { x0: left ? c.tx - w : c.tx, x1: left ? c.tx : c.tx + w, y0: top ? c.ty : c.ty - h, y1: top ? c.ty + h : c.ty };
+          var l2 = c.anchor[1] === 'r', top = c.anchor[0] === 't';
+          box = { x0: l2 ? c.tx - w : c.tx, x1: l2 ? c.tx : c.tx + w, y0: top ? c.ty : c.ty - h, y1: top ? c.ty + h : c.ty };
         }
         if (box.x0 < 8 || box.x1 > W - 8 || box.y0 < 8 || box.y1 > H - 8) continue;
         var leaderBox = c.L !== undefined ? { x0: g.x - 1, x1: g.x + 1, y0: Math.min(g.y, g.y + c.L) + 6, y1: Math.max(g.y, g.y + c.L) - 6 } : null;
-        if (hits(box, placed, 3) || hits(box, avoid, 6) || (leaderBox && hits(leaderBox, placed.slice(groups.length), 1))) continue;
+        if (hits(box, placed, 3) || hits(box, avoid, 6) || (leaderBox && (hits(leaderBox, placed.slice(nMarks), 1) || hits(leaderBox, avoid, 2)))) continue;
         placed.push(box);
-        drawLabel(g, name, n, c, box);
+        drawLabel(g, name, n, c, box, left);
         return;
       }
     });
-    gLabels.style('opacity', 0).transition().duration(450).style('opacity', 1);
+    gLabels.style('opacity', 0).transition().duration(mqReduce.matches ? 0 : 450).style('opacity', 1);
   }
 
-  function drawLabel(g, name, n, c, box) {
+  function drawLabel(g, name, n, c, box, left) {
     var lb = gLabels.append('g').attr('class', 'lb' + (g.projects.length > 1 ? ' is-group' : ''));
     if (c.L !== undefined) {
       lb.append('line').attr('x1', g.x).attr('x2', g.x)
@@ -335,21 +380,21 @@
   }
 
   function uiRects() {
-    var base = section.getBoundingClientRect();
-    return Array.prototype.map.call(section.querySelectorAll('.map-filters, .map-legend, .map-foot p'), function (el) {
-      var r = el.getBoundingClientRect();
-      return { x0: r.left - base.left, x1: r.right - base.left, y0: r.top - base.top, y1: r.bottom - base.top };
-    });
+    var els = [mqCompact.matches ? toggle : filters, section.querySelector('.map-legend'), section.querySelector('.map-count'), section.querySelector('.map-credit')];
+    return els.filter(function (el) { return el && el.offsetParent !== null; }).map(rel);
   }
 
   /* ---- Card --------------------------------------------------------------- */
   var hideTimer = null, pinned = false;
   card.addEventListener('mouseenter', function () { clearTimeout(hideTimer); });
   card.addEventListener('mouseleave', function () { if (!pinned) hideCardSoon(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { hideCard(); setPanel(false); }
+  });
 
   function legendSwatch(key, size) {
     var s = T.service(key), r = size || 3.6;
-    return '<svg width="' + (r * 2 + 2) + '" height="' + (r * 2 + 2) + '" viewBox="' + (-r - 1) + ' ' + (-r - 1) + ' ' + (r * 2 + 2) + ' ' + (r * 2 + 2) + '">' +
+    return '<svg width="' + (r * 2 + 2) + '" height="' + (r * 2 + 2) + '" viewBox="' + (-r - 1) + ' ' + (-r - 1) + ' ' + (r * 2 + 2) + ' ' + (r * 2 + 2) + '" aria-hidden="true">' +
       (s.mark === 'ring' ? '<circle r="' + (r - .7) + '" fill="#fff" stroke="' + s.color + '" stroke-width="1.4"/>' : '<circle r="' + r + '" fill="' + s.color + '"/>') + '</svg>';
   }
 
@@ -362,11 +407,10 @@
     var ps = g.projects, html;
     if (ps.length === 1) {
       var p = ps[0];
-      html = '<a href="' + href(p) + '">' +
-        '<p class="k">' + legendSwatch(p.service) + T.esc(T.t('service.' + p.service)) + '</p>' +
-        '<h3>' + T.esc(T.field(p, 'name')) + '</h3>' +
+      html = '<p class="k">' + legendSwatch(p.service) + T.esc(T.t('service.' + p.service)) + '</p>' +
+        '<h3><a href="' + href(p) + '">' + T.esc(T.field(p, 'name')) + '</a></h3>' +
         '<p class="meta">' + T.esc(T.field(p, 'city')) + ' · ' + p.year + '</p>' +
-        '<p class="go">' + T.esc(T.t('map.view')) + ' <span>→</span></p></a>';
+        '<a class="go" href="' + href(p) + '">' + T.esc(T.t('map.view')) + ' <span>→</span></a>';
     } else {
       var deeper = deeperRegion(g);
       html = '<p class="k">' + T.esc(groupLabel(g)) + ' · ' + T.esc(T.t('map.count', { n: ps.length })) + '</p><ul>' +
@@ -376,16 +420,23 @@
         (ps.length > 6 ? '<p class="meta more">' + T.esc(T.t('map.more', { n: ps.length - 6 })) + '</p>' : '') +
         (deeper ? '<button type="button" class="zoom" data-region="' + deeper + '">' + T.esc(T.t('map.zoom')) + ' →</button>' : '');
     }
+    if (pinned || !mqFine.matches) html += '<button type="button" class="map-card-close" aria-label="Close">×</button>';
     card.innerHTML = html;
     card.hidden = false;
     var zb = card.querySelector('.zoom');
-    if (zb) zb.addEventListener('click', function () { setRegion(zb.getAttribute('data-region')); });
-    // place next to the marker, flipping near the edges
-    var cw = card.offsetWidth, ch = card.offsetHeight;
-    var x = g.x + 18, y = g.y - ch / 2;
-    if (x + cw > W - 16) x = g.x - 18 - cw;
-    y = Math.max(16, Math.min(H - ch - 16, y));
-    card.style.left = x + 'px'; card.style.top = y + 'px';
+    if (zb) zb.addEventListener('click', function (e) { e.stopPropagation(); setRegion(zb.getAttribute('data-region')); });
+    var cb = card.querySelector('.map-card-close');
+    if (cb) cb.addEventListener('click', function (e) { e.stopPropagation(); hideCard(); });
+    if (mqCompact.matches) {
+      card.style.left = ''; card.style.top = '';          // bottom sheet, positioned by CSS
+    } else {
+      var cw = card.offsetWidth, ch = card.offsetHeight;
+      var x = g.x + 18, y = g.y - ch / 2;
+      if (x + cw > W - 16) x = g.x - 18 - cw;
+      x = Math.max(16, x);
+      y = Math.max(16, Math.min(H - ch - 16, y));
+      card.style.left = x + 'px'; card.style.top = y + 'px';
+    }
     requestAnimationFrame(function () { card.classList.add('is-on'); });
   }
   function hideCardSoon() { clearTimeout(hideTimer); hideTimer = setTimeout(hideCard, 220); }
@@ -394,16 +445,25 @@
     gMarks.selectAll('g.mk').classed('is-hover', false);
     setTimeout(function () { if (!card.classList.contains('is-on')) card.hidden = true; }, 220);
   }
-  section.addEventListener('click', function (e) { if (!card.contains(e.target)) hideCard(); });
 
-  function onMarkClick(g) {
+  function onMarkClick(g, keyboard) {
+    setPanel(false);
     var deeper = g.projects.length > 1 ? deeperRegion(g) : null;
     if (deeper) { setRegion(deeper); return; }
-    if (g.projects.length === 1 && hoverCapable) { location.href = href(g.projects[0]); return; }
+    // mouse: a single dot goes straight to the project (the card already showed on hover);
+    // touch / keyboard: first tap opens the card, which holds the link
+    if (g.projects.length === 1 && mqFine.matches && !keyboard) { location.href = href(g.projects[0]); return; }
     showCard(g, true);
   }
 
   /* ---- Controls ----------------------------------------------------------- */
+  function setPanel(open) {
+    filters.classList.toggle('is-open', !!open);
+    toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) hideCard();
+  }
+  toggle.addEventListener('click', function (e) { e.stopPropagation(); setPanel(!filters.classList.contains('is-open')); });
+
   function renderControls() {
     var regions = section.querySelector('.map-regions');
     regions.innerHTML = T.SITE.regions.map(function (r) {
@@ -424,9 +484,16 @@
   }
 
   function syncControls() {
-    section.querySelectorAll('[data-region]').forEach(function (b) { b.classList.toggle('is-active', b.getAttribute('data-region') === state.region); });
-    section.querySelectorAll('[data-year]').forEach(function (b) { b.classList.toggle('is-active', b.getAttribute('data-year') === String(state.year)); });
+    section.querySelectorAll('[data-region]').forEach(function (b) {
+      var on = b.getAttribute('data-region') === state.region;
+      b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on);
+    });
+    section.querySelectorAll('[data-year]').forEach(function (b) {
+      var on = b.getAttribute('data-year') === String(state.year);
+      b.classList.toggle('is-active', on); b.setAttribute('aria-pressed', on);
+    });
     section.querySelectorAll('[data-service]').forEach(function (b) { b.setAttribute('aria-pressed', state.services.has(b.getAttribute('data-service'))); });
+    toggle.querySelector('.sum').textContent = T.t('map.region.' + state.region) + ' · ' + (state.year === 'all' ? T.t('map.year.all') : state.year);
     var n = visibleProjects().length;
     var sample = projects.some(function (p) { return p.example; });
     section.querySelector('.map-count').innerHTML = '<b>' + T.esc(T.t('map.count', { n: n })) + '</b>' +
@@ -439,10 +506,13 @@
   }
 
   section.addEventListener('click', function (e) {
-    var b = e.target.closest('.map-filters button, .map-legend button');
-    if (!b) return;
-    if (b.dataset.region) setRegion(b.dataset.region);
-    if (b.dataset.year) { state.year = b.dataset.year === 'all' ? 'all' : +b.dataset.year; refresh(); }
+    var b = e.target.closest('.map-filter-cols button, .map-legend button');
+    if (!b) {
+      if (!card.contains(e.target) && !filters.contains(e.target)) { hideCard(); setPanel(false); }
+      return;
+    }
+    if (b.dataset.region) { setPanel(false); setRegion(b.dataset.region); }
+    if (b.dataset.year) { state.year = b.dataset.year === 'all' ? 'all' : +b.dataset.year; setPanel(false); refresh(); }
     if (b.dataset.service) {
       // first click isolates one service; further clicks add/remove; emptying resets to all
       var k = b.dataset.service, allKeys = T.SITE.services.map(function (s) { return s.key; });
@@ -488,8 +558,8 @@
     };
   }
 
-  /* ---- Drag to pan (mouse: any direction · touch: horizontal, so the page still scrolls) ---- */
-  var drag = null, home = null;
+  /* ---- Drag to pan (mouse: any direction · touch: horizontal only, so vertical swipes still scroll the page) ---- */
+  var drag = null;
   section.addEventListener('pointerdown', function (e) {
     if (!view || anim || e.button > 0 || e.target.closest('.map-filters, .map-legend, .map-card, .mk')) return;
     drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy, moved: false, touch: e.pointerType !== 'mouse' };
@@ -498,8 +568,9 @@
     if (!drag) return;
     var dx = e.clientX - drag.x, dy = drag.touch ? 0 : e.clientY - drag.y;
     if (!drag.moved) {
-      if (Math.hypot(dx, dy) < 5) return;
-      drag.moved = true; hideCard(); section.classList.add('is-dragging');
+      if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+      if (drag.touch && Math.abs(e.clientY - drag.y) > Math.abs(dx)) { drag = null; return; }  // vertical swipe = page scroll
+      drag.moved = true; hideCard(); setPanel(false); section.classList.add('is-dragging');
       gLabels.interrupt().style('opacity', 0);
     }
     var lim = { x: W * 0.5, y: H * 0.4 };
@@ -518,6 +589,7 @@
 
   /* ---- Boot --------------------------------------------------------------- */
   function onResize() {
+    if (anim) { anim.stop(); anim = null; focus.t = 1; }
     resizeCanvas();
     geo.chinaK = fitView('china').k;
     view = home = fitView(state.region);
@@ -551,16 +623,18 @@
     renderControls();
     updateActiveProvinces();
     onResize();
+    // re-fit on real size changes (rotation, window resize) but ignore mobile URL-bar jitter
     var lastW = W, lastH = H, rt;
-    window.addEventListener('resize', function () {
+    function maybeResize() {
       clearTimeout(rt);
       rt = setTimeout(function () {
         var r = section.getBoundingClientRect();
-        if (Math.abs(r.width - lastW) < 2 && Math.abs(r.height - lastH) < 80) return;  // ignore mobile URL bar
-        lastW = r.width; lastH = r.height; onResize();
-      }, 160);
-    });
-    // deep link: index.html?region=china#map
+        if (Math.abs(r.width - lastW) < 2 && Math.abs(r.height - lastH) < 60) return;
+        lastW = r.width; lastH = r.height; setPanel(false); hideCard(); onResize();
+      }, 180);
+    }
+    if (window.ResizeObserver) new ResizeObserver(maybeResize).observe(section);
+    else window.addEventListener('resize', maybeResize);
     var qr = new URLSearchParams(location.search).get('region');
     if (qr && qr !== 'global' && DEPTH.hasOwnProperty(qr)) setRegion(qr);
   }).catch(function (err) {
@@ -571,11 +645,16 @@
 
   document.addEventListener('tekuma:lang', function () {
     if (!projects.length) return;
-    renderControls();
-    renderLabels();
     hideCard();
+    renderControls();
+    // UI widths change with the language, so re-fit the camera
+    onResize();
   });
 
-  // expose for debugging / screenshots
-  window.TEKUMA_MAP = { setRegion: setRegion, state: state };
+  // exposed for debugging / automated screenshots
+  window.TEKUMA_MAP = {
+    setRegion: setRegion, state: state,
+    bounds: function () { return d3.geoPath(projectionFor(view)).bounds(regionGeo(state.region)); },
+    size: function () { return [W, H]; }
+  };
 })();

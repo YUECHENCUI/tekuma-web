@@ -85,8 +85,10 @@ python3 -m http.server 8000
 
 - 颜色、字体、间距：`css/style.css` 顶部 `:root`（品牌红 `--red: #E84728`，取自 brief）。
 - 服务类别（顺序、地图符号）、区域列表、年份列表：`js/common.js` 顶部 `SITE`。
-- 地图底图配色、世界地图中心经线、聚合距离：`js/map.js` 顶部 `STYLE` / `GLOBAL_CENTER` / `CLUSTER_PX`。
+- 地图底图配色、世界地图中心经线、聚合距离：`js/map.js` 顶部 `STYLE` / `GLOBAL_CENTER` / `clusterPx()`。
 - 想新增一个城市群（例如成渝）：在 `scripts/build-geo.sh` 的第 3 步加入对应省份 DataV 文件和标签，运行脚本，再在 `js/common.js` 的 `regions`、`js/i18n.js` 的 `map.region.xxx`、`js/map.js` 的 `DEPTH` 中各加一行。
+- 响应式断点（`css/style.css` 顶部注释有完整说明）：桌面 ≥1100px 四列服务；iPad 竖屏（681–1099px）两列、筛选两行；手机（≤680px 或高度 ≤540px 的横屏手机）地图筛选收为折叠按钮、项目卡片为底部弹层、服务单列。`js/map.js` 中 `COMPACT_QUERY` 必须与 CSS 保持一致。
+- 已测试设备：桌面 1280×720 至 3440×1440（含 21:9、5:4、MacBook）、iPad mini / 10 / Pro 11 / Pro 12.9 横竖屏、iPhone SE / 14 / 15 Pro Max、Android 360 / 412、手机横屏、Galaxy Fold。
 
 ## 6. 发布
 
@@ -120,5 +122,6 @@ All libraries, fonts and geodata are vendored — nothing loads from third-party
 - **Add a project:** copy an object in `data/projects.json` (fields above). `regions` ∈ `china, beijing, jjj, yrd, gba`; `service` ∈ `strategy, design, innovation, incubation`. Remove `"example": true` from real projects. Detail page: `project.html?id=<id>`.
 - **Edit text / translations:** `js/i18n.js` (all UI strings, `zh` + `en`). `?lang=en` opens English.
 - **Settings:** services / regions / years in `js/common.js`; colours in `css/style.css` `:root`; map styling in `js/map.js`.
+- **Responsive:** breakpoints documented at the top of `css/style.css` (desktop ≥1100px, tablet portrait 681–1099px, compact = width ≤680px or height ≤540px). Keep `COMPACT_QUERY` in `js/map.js` in sync with the CSS.
 - **Deploy:** commit and push to `main`; Pages updates in ~1–2 min.
 - **Map data:** China boundary from Alibaba DataV (official Chinese standard incl. Taiwan, South Tibet, Aksai Chin, nine-dash line); world layer is Natural Earth land only (no country borders). Rebuild with `scripts/build-geo.sh`.

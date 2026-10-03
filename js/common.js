@@ -126,17 +126,34 @@
     ctx.putImageData(img, 0, 0);
   }
 
-  function paintAllGrain() { document.querySelectorAll('canvas.grain').forEach(paintGrain); }
-  var lastW = 0, rt;
-  window.addEventListener('resize', function () {
-    if (window.innerWidth === lastW) return;   // ignore mobile URL-bar height changes
-    clearTimeout(rt); rt = setTimeout(function () { lastW = window.innerWidth; paintAllGrain(); }, 150);
-  });
+  /* Repaint when a grain canvas really changes size (rotation, window resize).
+     Painted at 1 canvas px per CSS px and scaled with image-rendering: pixelated, so it stays
+     crisp on retina screens while the pixel loop stays small on phones. */
+  var painted = new WeakMap();
+  function maybePaint(canvas) {
+    var r = canvas.getBoundingClientRect(), last = painted.get(canvas);
+    if (last && Math.abs(last.w - r.width) < 2 && Math.abs(last.h - r.height) < 24) return;
+    painted.set(canvas, { w: r.width, h: r.height });
+    paintGrain(canvas);
+  }
+  function initGrain() {
+    var list = document.querySelectorAll('canvas.grain');
+    list.forEach(maybePaint);
+    if (window.ResizeObserver) {
+      var t;
+      var ro = new ResizeObserver(function (entries) {
+        clearTimeout(t);
+        t = setTimeout(function () { list.forEach(maybePaint); }, 150);
+      });
+      list.forEach(function (c) { ro.observe(c); });
+    } else {
+      window.addEventListener('resize', function () { list.forEach(maybePaint); });
+    }
+  }
 
   document.addEventListener('DOMContentLoaded', function () {
     apply();
-    lastW = window.innerWidth;
-    paintAllGrain();
+    initGrain();
   });
 
   window.TEKUMA = {
