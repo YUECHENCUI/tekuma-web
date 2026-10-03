@@ -1,0 +1,615 @@
+{
+  "_readme": "TEKUMA project list. Every object = one project on the map and one detail page (project.html?id=...). See README.md › 添加项目. Remove \"example\": true from real projects.",
+  "projects": [
+    {
+      "id": "daxing-2026",
+      "example": true,
+      "name_zh": "示例项目 · 大兴",
+      "name_en": "Sample Project · Daxing",
+      "city_zh": "北京 · 大兴",
+      "city_en": "Beijing · Daxing",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 116.4,
+      "lat": 39.62,
+      "year": 2026,
+      "regions": [
+        "china",
+        "jjj",
+        "beijing"
+      ],
+      "service": "incubation",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于北京 · 大兴，类别为城市产品孵化与共创。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Beijing · Daxing illustrating the layout for incubation and co-creation of urban products. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "shenzhen-2026",
+      "example": true,
+      "name_zh": "示例项目 · 深圳",
+      "name_en": "Sample Project · Shenzhen",
+      "city_zh": "深圳",
+      "city_en": "Shenzhen",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 114.06,
+      "lat": 22.54,
+      "year": 2026,
+      "regions": [
+        "china",
+        "gba"
+      ],
+      "service": "innovation",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于深圳，类别为研究与产品创新。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Shenzhen illustrating the layout for research and product innovation. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "chaoyang-2025",
+      "example": true,
+      "name_zh": "示例项目 · 朝阳",
+      "name_en": "Sample Project · Chaoyang",
+      "city_zh": "北京 · 朝阳",
+      "city_en": "Beijing · Chaoyang",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 116.47,
+      "lat": 39.92,
+      "year": 2025,
+      "regions": [
+        "china",
+        "jjj",
+        "beijing"
+      ],
+      "service": "design",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于北京 · 朝阳，类别为总体规划与城市设计。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Beijing · Chaoyang illustrating the layout for master planning and urban design. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "shanghai-2025",
+      "example": true,
+      "name_zh": "示例项目 · 上海",
+      "name_en": "Sample Project · Shanghai",
+      "city_zh": "上海",
+      "city_en": "Shanghai",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 121.47,
+      "lat": 31.23,
+      "year": 2025,
+      "regions": [
+        "china",
+        "yrd"
+      ],
+      "service": "innovation",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于上海，类别为研究与产品创新。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Shanghai illustrating the layout for research and product innovation. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "singapore-2025",
+      "example": true,
+      "name_zh": "示例项目 · 新加坡",
+      "name_en": "Sample Project · Singapore",
+      "city_zh": "新加坡",
+      "city_en": "Singapore",
+      "country": "SG",
+      "country_zh": "新加坡",
+      "country_en": "Singapore",
+      "lng": 103.82,
+      "lat": 1.35,
+      "year": 2025,
+      "regions": [],
+      "service": "incubation",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于新加坡，类别为城市产品孵化与共创。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Singapore illustrating the layout for incubation and co-creation of urban products. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "dubai-2024",
+      "example": true,
+      "name_zh": "示例项目 · 迪拜",
+      "name_en": "Sample Project · Dubai",
+      "city_zh": "迪拜",
+      "city_en": "Dubai",
+      "country": "AE",
+      "country_zh": "阿联酋",
+      "country_en": "UAE",
+      "lng": 55.27,
+      "lat": 25.2,
+      "year": 2024,
+      "regions": [],
+      "service": "strategy",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于迪拜，类别为城市创新与概念战略。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Dubai illustrating the layout for urban innovation and concept strategy. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "hangzhou-2024",
+      "example": true,
+      "name_zh": "示例项目 · 杭州",
+      "name_en": "Sample Project · Hangzhou",
+      "city_zh": "杭州",
+      "city_en": "Hangzhou",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 120.16,
+      "lat": 30.27,
+      "year": 2024,
+      "regions": [
+        "china",
+        "yrd"
+      ],
+      "service": "design",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于杭州，类别为总体规划与城市设计。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Hangzhou illustrating the layout for master planning and urban design. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "xiongan-2024",
+      "example": true,
+      "name_zh": "示例项目 · 雄安新区",
+      "name_en": "Sample Project · Xiong'an",
+      "city_zh": "雄安新区",
+      "city_en": "Xiong'an",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 115.98,
+      "lat": 39.04,
+      "year": 2024,
+      "regions": [
+        "china",
+        "jjj"
+      ],
+      "service": "strategy",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于雄安新区，类别为城市创新与概念战略。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Xiong'an illustrating the layout for urban innovation and concept strategy. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "haidian-2023",
+      "example": true,
+      "name_zh": "示例项目 · 海淀",
+      "name_en": "Sample Project · Haidian",
+      "city_zh": "北京 · 海淀",
+      "city_en": "Beijing · Haidian",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 116.3,
+      "lat": 40.0,
+      "year": 2023,
+      "regions": [
+        "china",
+        "jjj",
+        "beijing"
+      ],
+      "service": "innovation",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于北京 · 海淀，类别为研究与产品创新。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Beijing · Haidian illustrating the layout for research and product innovation. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "hefei-2023",
+      "example": true,
+      "name_zh": "示例项目 · 合肥",
+      "name_en": "Sample Project · Hefei",
+      "city_zh": "合肥",
+      "city_en": "Hefei",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 117.23,
+      "lat": 31.82,
+      "year": 2023,
+      "regions": [
+        "china",
+        "yrd"
+      ],
+      "service": "incubation",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于合肥，类别为城市产品孵化与共创。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Hefei illustrating the layout for incubation and co-creation of urban products. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "riyadh-2023",
+      "example": true,
+      "name_zh": "示例项目 · 利雅得",
+      "name_en": "Sample Project · Riyadh",
+      "city_zh": "利雅得",
+      "city_en": "Riyadh",
+      "country": "SA",
+      "country_zh": "沙特阿拉伯",
+      "country_en": "Saudi Arabia",
+      "lng": 46.68,
+      "lat": 24.71,
+      "year": 2023,
+      "regions": [],
+      "service": "design",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于利雅得，类别为总体规划与城市设计。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Riyadh illustrating the layout for master planning and urban design. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "guangzhou-2022",
+      "example": true,
+      "name_zh": "示例项目 · 广州",
+      "name_en": "Sample Project · Guangzhou",
+      "city_zh": "广州",
+      "city_en": "Guangzhou",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 113.26,
+      "lat": 23.13,
+      "year": 2022,
+      "regions": [
+        "china",
+        "gba"
+      ],
+      "service": "design",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于广州，类别为总体规划与城市设计。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Guangzhou illustrating the layout for master planning and urban design. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "tongzhou-2022",
+      "example": true,
+      "name_zh": "示例项目 · 通州",
+      "name_en": "Sample Project · Tongzhou",
+      "city_zh": "北京 · 通州",
+      "city_en": "Beijing · Tongzhou",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 116.7,
+      "lat": 39.88,
+      "year": 2022,
+      "regions": [
+        "china",
+        "jjj",
+        "beijing"
+      ],
+      "service": "strategy",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于北京 · 通州，类别为城市创新与概念战略。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Beijing · Tongzhou illustrating the layout for urban innovation and concept strategy. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "chengdu-2021",
+      "example": true,
+      "name_zh": "示例项目 · 成都",
+      "name_en": "Sample Project · Chengdu",
+      "city_zh": "成都",
+      "city_en": "Chengdu",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 104.07,
+      "lat": 30.67,
+      "year": 2021,
+      "regions": [
+        "china"
+      ],
+      "service": "design",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于成都，类别为总体规划与城市设计。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Chengdu illustrating the layout for master planning and urban design. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "tianjin-2021",
+      "example": true,
+      "name_zh": "示例项目 · 天津",
+      "name_en": "Sample Project · Tianjin",
+      "city_zh": "天津",
+      "city_en": "Tianjin",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 117.2,
+      "lat": 39.1,
+      "year": 2021,
+      "regions": [
+        "china",
+        "jjj"
+      ],
+      "service": "design",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于天津，类别为总体规划与城市设计。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Tianjin illustrating the layout for master planning and urban design. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "boston-2020",
+      "example": true,
+      "name_zh": "示例项目 · 波士顿",
+      "name_en": "Sample Project · Boston",
+      "city_zh": "波士顿",
+      "city_en": "Boston",
+      "country": "US",
+      "country_zh": "美国",
+      "country_en": "USA",
+      "lng": -71.06,
+      "lat": 42.36,
+      "year": 2020,
+      "regions": [],
+      "service": "innovation",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于波士顿，类别为研究与产品创新。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Boston illustrating the layout for research and product innovation. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "suzhou-2020",
+      "example": true,
+      "name_zh": "示例项目 · 苏州",
+      "name_en": "Sample Project · Suzhou",
+      "city_zh": "苏州",
+      "city_en": "Suzhou",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 120.62,
+      "lat": 31.3,
+      "year": 2020,
+      "regions": [
+        "china",
+        "yrd"
+      ],
+      "service": "strategy",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于苏州，类别为城市创新与概念战略。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Suzhou illustrating the layout for urban innovation and concept strategy. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "shijiazhuang-2019",
+      "example": true,
+      "name_zh": "示例项目 · 石家庄",
+      "name_en": "Sample Project · Shijiazhuang",
+      "city_zh": "石家庄",
+      "city_en": "Shijiazhuang",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 114.51,
+      "lat": 38.04,
+      "year": 2019,
+      "regions": [
+        "china",
+        "jjj"
+      ],
+      "service": "strategy",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于石家庄，类别为城市创新与概念战略。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Shijiazhuang illustrating the layout for urban innovation and concept strategy. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "xian-2019",
+      "example": true,
+      "name_zh": "示例项目 · 西安",
+      "name_en": "Sample Project · Xi'an",
+      "city_zh": "西安",
+      "city_en": "Xi'an",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 108.94,
+      "lat": 34.34,
+      "year": 2019,
+      "regions": [
+        "china"
+      ],
+      "service": "strategy",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于西安，类别为城市创新与概念战略。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Xi'an illustrating the layout for urban innovation and concept strategy. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    },
+    {
+      "id": "hongkong-2018",
+      "example": true,
+      "name_zh": "示例项目 · 香港",
+      "name_en": "Sample Project · Hong Kong",
+      "city_zh": "香港",
+      "city_en": "Hong Kong",
+      "country": "CN",
+      "country_zh": "中国",
+      "country_en": "China",
+      "lng": 114.17,
+      "lat": 22.3,
+      "year": 2018,
+      "regions": [
+        "china",
+        "gba"
+      ],
+      "service": "strategy",
+      "summary_zh": "这是一个用于展示版式的示例项目，位于香港，类别为城市创新与概念战略。请替换为真实的项目简介。",
+      "summary_en": "A sample project in Hong Kong illustrating the layout for urban innovation and concept strategy. Replace with the real project summary.",
+      "body_zh": [
+        "此处为项目正文示例。正式上线前，请在 data/projects.json 中填写项目背景、设计策略与成果等内容，每一段对应数组中的一项。",
+        "建议正文保持两到四段，每段一百至两百字，配合封面图与图集共同讲述项目。"
+      ],
+      "body_en": [
+        "This is placeholder body text. Before launch, fill in the project background, approach and outcomes in data/projects.json — each paragraph is one item in the array.",
+        "Two to four short paragraphs work best, paired with a cover image and an optional gallery."
+      ],
+      "cover": "",
+      "gallery": []
+    }
+  ]
+}
