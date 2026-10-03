@@ -499,6 +499,11 @@
     // a city cluster (Beijing, Shenzhen …) just zooms in — cities are not filter items
     if (r && DEPTH[r] > DEPTH[state.region]) { setRegion(r); return; }
     if (canZoom(g)) { fly(groupCamera(g)); return; }
+    // members already fill the view yet still overlap (small screens): keep zooming in around them
+    var bb = membersBounds(ps), z = map.getZoom();
+    if (ps.length > 1 && z < FIT_MAX_ZOOM - 0.5 && (bb[1][0] - bb[0][0] > 0.03 || bb[1][1] - bb[0][1] > 0.03)) {
+      fly({ center: [g.lng, g.lat], zoom: Math.min(FIT_MAX_ZOOM, Math.max(z + 1.5, CITY_ZOOM)) }); return;
+    }
     if (!fromCard) showCard(g, true);
   }
 
