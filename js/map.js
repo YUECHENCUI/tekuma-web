@@ -672,6 +672,13 @@
     map.on('movestart', function (e) { if (!pinned && card.__g) hideCard(); if (!e.originalEvent || e.originalEvent.type === 'wheel' || (e.originalEvent.touches && e.originalEvent.touches.length > 1)) hideLabels(); });
     map.on('dragstart', function () { hideCard(); setPanel(false); });
     map.on('load', function () { section.classList.add('is-ready'); onMoveEnd(); });
+    // tile fetches cancelled mid-flight (fast flights, flaky mobile networks) are retried by MapLibre
+    // on the next frame that needs them; keep them out of the console, report anything else
+    map.on('error', function (e) {
+      var err = e && e.error;
+      if (e && e.sourceId && e.sourceId !== 'cn') { console.debug('[TEKUMA map] tile', e.sourceId, err && (err.message || err.name)); return; }
+      console.error('[TEKUMA map]', err || e);
+    });
     groups = buildGroups(); renderMarks(false);
     if (window.ResizeObserver) new ResizeObserver(onSizeChange).observe(section);
     else window.addEventListener('resize', onSizeChange);
