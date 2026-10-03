@@ -37,7 +37,8 @@
   var PORTRAIT_CENTER = [105, 28];  // tall screens crop the world around Asia (drag to see the rest)
   var GLOBAL_LAT = [-55, 75];
   var COUNTRY_ZOOM = 2.6;           // below this, countries with ≥3 projects collapse into one marker
-  var CITY_SPREAD = 4;              // a city's projects (Beijing, Shenzhen …) form one marker until they spread over 4× the cluster radius
+  var CITY_SPREAD = 4;              // a city's projects (Beijing, Shenzhen …) form one marker until they spread over 4× the cluster radius …
+  var CITY_ZOOM = 9;                // … and the map is at city zoom (where the detailed city tiles start)
   var MAX_ZOOM = 14, FIT_MAX_ZOOM = 13;
   var DEPTH = { global: 0, china: 1, jjj: 2, yrd: 2, gba: 2 };
   var REGION_ALIAS = { beijing: 'jjj', bj: 'jjj', tianjin: 'jjj', hebei: 'jjj', shenzhen: 'gba', sz: 'gba' };
@@ -157,11 +158,11 @@
     return compact || f.w > W * 0.6 ? [band] : [band, col];
   }
 
-  function fitBounds(b, pad) {
+  function fitBounds(b, pad, minZ) {
     var x0 = mx(b[0][0]), x1 = mx(b[1][0]), y0 = my(b[1][1]), y1 = my(b[0][1]);
     var aw = Math.max(60, W - pad.l - pad.r), ah = Math.max(60, H - pad.t - pad.b);
     var z = Math.log2(Math.min(aw / ((x1 - x0) * 512), ah / ((y1 - y0) * 512)));
-    return camera((x0 + x1) / 2, (y0 + y1) / 2, Math.min(FIT_MAX_ZOOM, z), pad, aw, ah);
+    return camera((x0 + x1) / 2, (y0 + y1) / 2, Math.max(minZ || 0, Math.min(FIT_MAX_ZOOM, z)), pad, aw, ah);
   }
   // camera whose padded viewport is centred on world point (cx, cy)
   function camera(cx, cy, z, pad, aw, ah) {
@@ -220,7 +221,7 @@
     Object.keys(byCity).forEach(function (k) {
       var ps = byCity[k], x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
       ps.forEach(function (p) { var xy = project(p.lng, p.lat); x0 = Math.min(x0, xy.x); x1 = Math.max(x1, xy.x); y0 = Math.min(y0, xy.y); y1 = Math.max(y1, xy.y); });
-      if (ps.length > 1 && Math.hypot(x1 - x0, y1 - y0) < CITY_SPREAD * R) units.push(ps);
+      if (ps.length > 1 && (z < CITY_ZOOM - 0.05 || Math.hypot(x1 - x0, y1 - y0) < CITY_SPREAD * R)) units.push(ps);
       else ps.forEach(function (p) { units.push([p]); });
     });
     var used = [];
@@ -259,7 +260,11 @@
     if (g.kind === 'country') return T.field(ps[0], 'country');
     if (ps.length === 1) return g.useDistrict ? district(ps[0]) : city(ps[0]);
     var cities = Array.from(new Set(ps.map(city)));
-    if (cities.length === 1) return cities[0];
+    if (cities.length === 1) {
+      if (!g.useDistrict) return cities[0];
+      var ds = Array.from(new Set(ps.map(district)));   // several markers of one city: name their districts
+      return ds[0] + ' / ' + ds[1] + (ds.length > 2 ? ' …' : '');
+    }
     var r = commonRegion(ps);
     if (r) return T.t('map.region.' + r);
     return cities[0] + ' / ' + cities[1] + (cities.length > 2 ? ' …' : '');
@@ -362,7 +367,7 @@
     var fs = labelSize(), sc = markScale();
     var counts = {};
     gs.forEach(function (g) { g.useDistrict = false; var l = groupLabel(g); counts[l] = (counts[l] || 0) + 1; });
-    gs.forEach(function (g) { if (g.projects.length === 1 && counts[groupLabel(g)] > 1) g.useDistrict = true; });
+    gs.forEach(function (g) { if (counts[groupLabel(g)] > 1) g.useDistrict = true; });
     var placed = gs.map(function (g) { var r = g.projects.length > 1 ? badgeR(g) + 1 : 6 * sc; return { x0: g.x - r, y0: g.y - r, x1: g.x + r, y1: g.y + r }; });
     var nMarks = placed.length, avoid = uiRects();
     gs.slice().sort(function (a, b) { return b.projects.length - a.projects.length || a.y - b.y; }).forEach(function (g) {
@@ -472,9 +477,12 @@
     return [[w - pad, s - pad], [e + pad, n + pad]];
   }
   function groupCamera(g) {
+    // one city (Beijing, Shenzhen …): always land at least at city zoom, where its projects spread out
+    var c0 = g.projects[0].city_en.split(' · ')[0];
+    var minZ = g.projects.every(function (p) { return p.city_en.split(' · ')[0] === c0; }) ? CITY_ZOOM : 0;
     var best = null, b = membersBounds(g.projects);
     paddings().forEach(function (pad) {
-      var cam = fitBounds(b, pad);
+      var cam = fitBounds(b, pad, minZ);
       if (!best || cam.zoom > best.zoom) best = cam;
     });
     return best;
