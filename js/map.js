@@ -43,7 +43,7 @@
   var DEPTH = { global: 0, china: 1, jjj: 2, yrd: 2, gba: 2 };
   var REGION_ALIAS = { beijing: 'jjj', bj: 'jjj', tianjin: 'jjj', hebei: 'jjj', shenzhen: 'gba', sz: 'gba' };
   var COMPACT_QUERY = '(max-width: 680px), (max-height: 540px)';   // keep in sync with css/style.css
-  var SAME_SITE_M = 60, SPREAD_GAP_M = 520;   // projects within 60 m (phases of one site, city-level guesses) are drawn on a small ring, ~520 m apart
+  var SAME_SITE_M = 60, SPREAD_GAP_M = 500;   // projects within 60 m (phases of one site, city-level guesses) are drawn on a small ring, ~500 m apart (separate from z12)
   var CARD_LIST = 6;                // a group card lists 6 projects when zooming in reveals the rest, otherwise all of them
 
   var mqCompact = window.matchMedia(COMPACT_QUERY);
@@ -285,15 +285,22 @@
     var ps = g.projects;
     if (g.kind === 'country') return T.field(ps[0], 'country');
     if (ps.length === 1) return g.useDistrict ? district(ps[0]) : city(ps[0]);
-    var cities = Array.from(new Set(ps.map(city)));
+    var cities = byCount(ps.map(city));
     if (cities.length === 1) {
       if (!g.useDistrict) return cities[0];
-      var ds = Array.from(new Set(ps.map(district)));   // several markers of one city: name their districts
-      return ds[0] + ' / ' + ds[1] + (ds.length > 2 ? ' …' : '');
+      var ds = byCount(ps.map(district));   // several markers of one city: name their districts
+      return ds.length === 1 ? ds[0] : ds[0] + ' / ' + ds[1] + (ds.length > 2 ? ' …' : '');
     }
+    // a cluster holding a whole city-region (e.g. all GBA projects in the China view) takes its name,
+    // any other mix is named after its two largest cities
     var r = commonRegion(ps);
-    if (r) return T.t('map.region.' + r);
+    if (r && r !== 'china' && ps.length === shown().filter(function (p) { return inRegion(p, r); }).length) return T.t('map.region.' + r);
     return cities[0] + ' / ' + cities[1] + (cities.length > 2 ? ' …' : '');
+  }
+  function byCount(names) {   // distinct names, most frequent first (ties keep first appearance)
+    var n = {}, first = {}, order = [];
+    names.forEach(function (s, i) { if (!(s in n)) { n[s] = 0; first[s] = i; order.push(s); } n[s]++; });
+    return order.sort(function (a, b) { return n[b] - n[a] || first[a] - first[b]; });
   }
 
   /* ---- Markers (svg) ------------------------------------------------------ */
