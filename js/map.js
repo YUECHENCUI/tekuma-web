@@ -43,6 +43,8 @@
   var DEPTH = { global: 0, china: 1, jjj: 2, yrd: 2, gba: 2 };
   var REGION_ALIAS = { beijing: 'jjj', bj: 'jjj', tianjin: 'jjj', hebei: 'jjj', shenzhen: 'gba', sz: 'gba' };
   var COMPACT_QUERY = '(max-width: 680px), (max-height: 540px)';   // keep in sync with css/style.css
+  var SAME_SITE_M = 60, SPREAD_GAP_M = 520;   // projects within 60 m (phases of one site, city-level guesses) are drawn on a small ring, ~520 m apart
+  var CARD_LIST = 6;                // a group card lists 6 projects when zooming in reveals the rest, otherwise all of them
 
   var mqCompact = window.matchMedia(COMPACT_QUERY);
   var mqFine = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -199,6 +201,30 @@
   function inRegion(p, r) { return r === 'global' || (p.regions || []).indexOf(r) > -1; }
   function yearOk(p) { return state.year === 'all' || +p.year === +state.year; }
   function shown() { return projects.filter(yearOk); }
+
+  // Several projects may share one coordinate (phase 1 / phase 2 of a site, or a project only
+  // located to a city). Draw them on a small ring around that point so each stays clickable;
+  // data/projects.json keeps the true coordinates (the project page shows those).
+  function spreadSameSite(list) {
+    var M = 111320, sites = [];
+    list.forEach(function (p) {
+      for (var i = 0; i < sites.length; i++) {
+        var q = sites[i][0], k = Math.cos(q.lat * Math.PI / 180);
+        if (Math.hypot((p.lng - q.lng) * k, p.lat - q.lat) * M < SAME_SITE_M) { sites[i].push(p); return; }
+      }
+      sites.push([p]);
+    });
+    sites.forEach(function (ps) {
+      if (ps.length < 2) return;
+      var n = ps.length, r = SPREAD_GAP_M / 2 / Math.sin(Math.PI / n), lat0 = ps[0].lat, lng0 = ps[0].lng, k = Math.cos(lat0 * Math.PI / 180);
+      ps.slice().sort(function (a, b) { return a.year - b.year || (a.id < b.id ? -1 : 1); }).forEach(function (p, i) {
+        var a = Math.PI * (n === 2 ? 0 : -0.5) + 2 * Math.PI * i / n;   // pairs side by side (west → east, older first)
+        p.lng = lng0 + (n === 2 ? (i ? 1 : -1) * r : r * Math.cos(a)) / (M * k);
+        p.lat = lat0 + (n === 2 ? 0 : -r * Math.sin(a)) / M;
+      });
+    });
+    return list;
+  }
 
   function project(lng, lat) {
     var c = map.getCenter().lng;
@@ -429,17 +455,19 @@
     var ps = g.projects, html;
     if (ps.length === 1) {
       var p = ps[0];
-      html = '<p class="k"><span>' + T.esc(T.t('service.' + p.service)) + '</span><span class="yr">' + p.year + '</span></p>' +
+      html = '<p class="k"><span>' + T.esc(p.service ? T.t('service.' + p.service) : T.field(p, 'country')) + '</span><span class="yr">' + p.year + '</span></p>' +
         '<h3><a href="' + href(p) + '">' + T.esc(T.field(p, 'name')) + '</a></h3>' +
         '<p class="meta">' + T.esc(T.field(p, 'city')) + '</p>' +
         '<a class="go" href="' + href(p) + '">' + T.esc(T.t('map.view')) + ' <span aria-hidden="true">→</span></a>';
     } else {
+      var zoomable = canZoom(g), max = zoomable ? CARD_LIST : ps.length;
       html = '<p class="k"><span>' + T.esc(groupLabel(g)) + '</span><span class="yr">' + T.esc(T.t('map.count', { n: ps.length })) + '</span></p><ul>' +
-        ps.slice(0, 6).map(function (p) {
-          return '<li><a href="' + href(p) + '"><span>' + T.esc(T.field(p, 'name')) + '<small>' + T.esc(T.t('service.' + p.service)) + '</small></span><span class="yr">' + p.year + '</span></a></li>';
+        ps.slice(0, max).map(function (p) {
+          var sub = p.service ? T.t('service.' + p.service) : T.field(p, 'city');
+          return '<li><a href="' + href(p) + '"><span>' + T.esc(T.field(p, 'name')) + (sub ? '<small>' + T.esc(sub) + '</small>' : '') + '</span><span class="yr">' + p.year + '</span></a></li>';
         }).join('') + '</ul>' +
-        (ps.length > 6 ? '<p class="meta more">' + T.esc(T.t('map.more', { n: ps.length - 6 })) + '</p>' : '') +
-        (canZoom(g) ? '<button type="button" class="zoom">' + T.esc(T.t('map.zoom')) + ' <span aria-hidden="true">→</span></button>' : '');
+        (ps.length > max ? '<p class="meta more">' + T.esc(T.t('map.more', { n: ps.length - max })) + '</p>' : '') +
+        (zoomable ? '<button type="button" class="zoom">' + T.esc(T.t('map.zoom')) + ' <span aria-hidden="true">→</span></button>' : '');
     }
     if (pinned || !mqFine.matches) html += '<button type="button" class="map-card-close" aria-label="Close">×</button>';
     card.innerHTML = html;
@@ -645,7 +673,7 @@
   }
 
   function boot(res) {
-    projects = res[0]; overlay = res[1];
+    projects = spreadSameSite(res[0]); overlay = res[1];
     renderControls();
     syncSize();
     if (!window.maplibregl || !window.pmtiles) return fail('Map library failed to load.');

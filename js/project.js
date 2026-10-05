@@ -32,28 +32,29 @@
     var prev = all[(i - 1 + all.length) % all.length], next = all[(i + 1) % all.length];
     var regions = (p.regions || []).map(function (r) { return T.t('map.region.' + r); });
     if (!regions.length) regions = [T.t('map.region.global')];
-    var body = p['body_' + T.lang()] || p.body_zh || [];
+    var body = (p['body_' + T.lang()] || p.body_zh || []).filter(function (s) { return s && String(s).trim(); });
+    var summary = T.field(p, 'summary');
     var gallery = p.gallery || [];
 
     document.title = T.field(p, 'name') + ' · TEKUMA';
     head.innerHTML =
-      '<p class="pj-kicker"><span>' + T.esc(T.t('service.brand')) + ' · ' + T.esc(T.t('service.' + p.service)) + '</span><span class="yr">' + p.year + '</span></p>' +
+      '<p class="pj-kicker"><span>' + T.esc(T.t('service.brand')) + (p.service ? ' · ' + T.esc(T.t('service.' + p.service)) : '') + '</span><span class="yr">' + p.year + '</span></p>' +
       '<h1 class="pj-title">' + T.esc(T.field(p, 'name')) + '</h1>' +
       (p.example ? '<span class="pj-sample">' + T.esc(T.t('project.sample')) + '</span>' : '');
     root.innerHTML =
       cover(p) +
-      '<div class="pj-head">' +
+      '<div class="pj-head' + (summary || body.length ? '' : ' is-meta-only') + '">' +
         '<dl class="pj-meta">' +
-          row(T.t('project.service'), T.t('service.' + p.service)) +
+          (p.service ? row(T.t('project.service'), T.t('service.' + p.service)) : '') +
           row(T.t('project.location'), T.field(p, 'city') + (p.country_zh ? ' · ' + T.field(p, 'country') : '')) +
           row(T.t('project.year'), p.year) +
           row(T.t('project.region'), regions.join(' / ')) +
           row(T.t('project.coords'), coords(p)) +
         '</dl>' +
-        '<div>' +
-          '<p class="pj-summary">' + T.esc(T.field(p, 'summary')) + '</p>' +
-          '<div class="pj-body">' + body.map(function (para) { return '<p>' + T.esc(para) + '</p>'; }).join('') + '</div>' +
-        '</div>' +
+        (summary || body.length ? '<div>' +
+          (summary ? '<p class="pj-summary">' + T.esc(summary) + '</p>' : '') +
+          (body.length ? '<div class="pj-body">' + body.map(function (para) { return '<p>' + T.esc(para) + '</p>'; }).join('') + '</div>' : '') +
+        '</div>' : '') +
       '</div>' +
       (gallery.length ? '<div class="pj-gallery">' + gallery.map(function (src) { return '<img src="' + T.esc(src) + '" alt="" loading="lazy">'; }).join('') + '</div>' : '') +
       '<nav class="pj-nav">' +

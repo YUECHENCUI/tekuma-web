@@ -381,6 +381,7 @@ html[data-lang="zh"] .pj-title { font-weight: 500; letter-spacing: .02em; line-h
 .pj-head { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: clamp(48px, 8vh, 112px); }   /* same 4-column grid as the services */
 .pj-head > :last-child { grid-column: 2 / span 3; max-width: 46em; padding-left: clamp(20px, 2.2vw, 44px); }
 .pj-meta { border-top: 1px solid var(--ink); font-size: var(--t-ui); align-self: start; }
+.pj-head.is-meta-only > .pj-meta { grid-column: 1 / span 2; max-width: 36em; padding-left: 0; }   /* no text yet: facts only, half width */
 .pj-meta div { display: flex; justify-content: space-between; gap: 20px; padding: 14px 0; border-bottom: 1px solid var(--rule); }
 .pj-meta dt { color: var(--ink-3); letter-spacing: .04em; flex: none; }
 .pj-meta dd { text-align: right; font-variant-numeric: tabular-nums; }
@@ -509,6 +510,7 @@ html[data-lang="en"] .pj-body p { letter-spacing: 0; line-height: 1.7; }
 
   .pj-head { grid-template-columns: 1fr; gap: 36px; }
   .pj-head > :last-child { grid-column: auto; padding-left: 0; }
+  .pj-head.is-meta-only > .pj-meta { grid-column: auto; max-width: none; }
   .pj-head .pj-meta { order: 2; }
   .pj-cover { aspect-ratio: 4 / 3; margin-top: -24px; }
   .pj-gallery { grid-template-columns: 1fr; }

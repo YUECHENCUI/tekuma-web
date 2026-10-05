@@ -62,17 +62,18 @@ python3 scripts/serve.py          # 然后打开 http://localhost:8000
 
 | 字段 | 说明 |
 |---|---|
-| `id` | 唯一标识（小写字母/数字/连字符）；详情页 `project.html?id=<id>` |
-| `lng` / `lat` | 经纬度（小数）。同一城市的项目请使用各自真实位置——**相距 ≥1 km** 时，放大到城市级别就会各自分开显示 |
+| `id` | 唯一标识；详情页 `project.html?id=<id>`。正式数据沿用 Kit 目录编号（如 `23-07`；重复编号加 a/b，如 `22-04a`/`22-04b`） |
+| `lng` / `lat` | 经纬度（WGS84 小数）。同一城市的项目请使用各自真实位置——**相距 ≥1 km** 时，放大到城市级别就会各自分开显示。坐标相同（<60 m，如一期/二期同一地块）的项目，地图会自动把它们画成相距约 500 m 的一小圈，各自可点；数据仍保留真实坐标 |
 | `city_zh` / `city_en` | 写成 `北京 · 海淀` / `Beijing · Haidian`。点 `·` 前的部分是**城市**：同城多个项目在缩小时合并为一个“北京 10”标注，点击即放大到该城市并展开（城市不是筛选项，不需要任何额外设置） |
 | `year` | 需在 `js/common.js` 的 `years` 列表中才会出现在筛选里 |
 | `regions` | `china`、`jjj`（京津冀）、`yrd`（长三角）、`gba`（粤港澳）。全球视图包含所有项目，无需写 `global` |
-| `service` | `strategy` / `design` / `innovation` / `incubation`（地图统一红点，服务只在卡片与详情页以文字显示） |
+| `service` | `strategy` / `design` / `innovation` / `incubation`，或留空 `""`（留空时卡片与详情页不显示服务一栏） |
+| `summary_*` / `body_*` | 详情页简介与正文；留空时详情页只显示封面占位、项目信息与上一/下一项目，不留空白区块 |
 | `country` | 国家代码；全球视图中同一国家 ≥3 个项目时合并为一个标注（如“中国 28”） |
 | `cover` / `gallery` | 图片路径；留空 `""` 时显示占位图 |
-| `example` | 示例数据标记。**正式项目请删除这一行**；全部删除后“示例数据”提示自动消失 |
+| `example` | 可选：`true` 时显示“示例数据”提示（正式数据中不使用） |
 
-> 目前 32 个项目全部是**示例数据**（含北京 10 个、深圳 7 个，用于演示城市放大），请替换为真实项目。
+> 目前为 Kit 提供的真实项目目录（`brief/projects.xlsx`，157 个地图点位）。点位核对过程与依据见仓库外的 `data-work/` 与《TEKUMA项目点位核对表.xlsx》；简介、正文、服务类别与图片待补充。
 
 **北京、深圳以外的城市**：底图在 z9 以上（城市级）只为北京、深圳准备了精细瓦片，其他城市放大后仍可见海岸线、水系、高速公路，但街道较少。需要时见第 7 节添加城市瓦片。
 
@@ -149,7 +150,7 @@ git add -A && git commit -m "Add project: xxx" && git push
 Static site (HTML/CSS/vanilla JS, no build step, no API keys) on GitHub Pages. Everything — libraries, fonts, vector tiles, map glyphs — is self-hosted; nothing loads from third-party hosts at runtime (works in mainland China).
 
 - **Preview:** `python3 scripts/serve.py` → http://localhost:8000 (needs HTTP Range support for `.pmtiles`).
-- **Add a project:** copy an object in `data/projects.json`. Use `"city_en": "Beijing · Haidian"` style names; projects sharing the city part merge into one city marker (e.g. "Beijing 10") that zooms in and spreads out on click — cities are not filter items. Keep real coordinates (≥1 km apart separate at city zoom). `regions` ∈ `china, jjj, yrd, gba`; remove `"example": true` from real projects.
+- **Add a project:** copy an object in `data/projects.json`. Use `"city_en": "Beijing · Haidian"` style names; projects sharing the city part merge into one city marker (e.g. "Beijing 10") that zooms in and spreads out on click — cities are not filter items. Keep real coordinates (≥1 km apart separate at city zoom). `regions` ∈ `china, jjj, yrd, gba`; co-located projects (<60 m) are drawn on a small ~500 m ring at runtime; `service`, `summary_*`, `body_*` may be empty and are then hidden.
 - **Text:** `js/i18n.js`. After changing any Chinese text run `python3 scripts/subset-fonts.py` (needs `fonttools brotli`) to regenerate the font subsets.
 - **Map:** MapLibre GL JS + self-hosted Protomaps PMTiles (world z0–6, east China z7–9, Beijing & Shenzhen z9–13; ≈43 MB total, fetched by range request). Tile-source admin boundaries are removed; China's boundary, provinces and nine-dash line come from Alibaba DataV. Cooperative gestures: Ctrl/⌘ + scroll on desktop, two fingers on touch. Rebuild tiles with `scripts/build-tiles.sh`, boundaries with `scripts/build-geo.sh`.
 - **Fonts:** Instrument Sans (OFL) + Noto Sans SC (OFL), subset and self-hosted.
