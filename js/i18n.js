@@ -76,6 +76,8 @@ window.TEKUMA_I18N = {
     'project.cover': '图片待补充',
     'project.prev': '上一个',
     'project.next': '下一个',
+    'project.layers.hint': '点击叠加',
+    'project.layers.done': '点击还原',
     'project.notfound': '未找到该项目',
     'project.notfound.text': '链接可能已失效，请返回项目地图查看全部项目。'
   },
@@ -145,6 +147,8 @@ window.TEKUMA_I18N = {
     'project.cover': 'Image to come',
     'project.prev': 'Previous',
     'project.next': 'Next',
+    'project.layers.hint': 'Click to layer',
+    'project.layers.done': 'Click to reset',
     'project.notfound': 'Project not found',
     'project.notfound.text': 'The link may be out of date. Return to the project map to browse all projects.'
   }

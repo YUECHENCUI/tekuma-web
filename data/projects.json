@@ -3529,8 +3529,13 @@
    "summary_en": "",
    "body_zh": [],
    "body_en": [],
-   "cover": "",
-   "gallery": []
+   "cover": "assets/projects/26-08/01.webp",
+   "gallery": [],
+   "layers": [
+    "assets/projects/26-08/01.webp",
+    "assets/projects/26-08/02.webp",
+    "assets/projects/26-08/03.webp"
+   ]
   },
   {
    "id": "26-09",

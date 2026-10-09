@@ -378,6 +378,33 @@ html[data-lang="zh"] .pj-title { font-weight: 500; letter-spacing: .02em; line-h
 .pj-cover .ph-cross::before { left: 0; right: 0; top: 50%; height: 1px; }
 .pj-cover .ph-cross::after { top: 0; bottom: 0; left: 50%; width: 1px; }
 
+/* Click-to-layer stack (project detail): each click fades the next image on top */
+.pj-layers {
+  position: relative; width: 100%; aspect-ratio: 16 / 9; max-height: 72svh; overflow: hidden;
+  margin-top: clamp(-80px, -6vh, -32px); background: #EFEFEC; cursor: pointer;
+  user-select: none; -webkit-user-select: none;
+}
+.pj-layers:focus-visible { outline: 2px solid var(--red); outline-offset: 3px; }
+.pj-layers-stack { position: absolute; inset: 0; }
+.pj-layer {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block;
+  opacity: 0; transition: opacity .55s var(--ease-out); pointer-events: none;
+}
+.pj-layer.is-on { opacity: 1; }
+.pj-layer[data-i="0"] { opacity: 1; } /* base always visible underneath */
+.pj-layers-ui {
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2;
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  padding: clamp(12px, 1.6vw, 22px) clamp(14px, 2vw, 28px);
+  background: linear-gradient(transparent, rgba(20,20,20,.28));
+  color: #fff; font-size: var(--t-label); letter-spacing: var(--track-label); text-transform: uppercase;
+  pointer-events: none;
+}
+.pj-layers-hint { opacity: .92; }
+.pj-layers-count { font-variant-numeric: tabular-nums; opacity: .8; }
+.pj-layers-count b { font-weight: 600; opacity: 1; }
+
+
 .pj-head { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: clamp(48px, 8vh, 112px); }   /* same 4-column grid as the services */
 .pj-head > :last-child { grid-column: 2 / span 3; max-width: 46em; padding-left: clamp(20px, 2.2vw, 44px); }
 .pj-meta { border-top: 1px solid var(--ink); font-size: var(--t-ui); align-self: start; }
@@ -513,6 +540,7 @@ html[data-lang="en"] .pj-body p { letter-spacing: 0; line-height: 1.7; }
   .pj-head.is-meta-only > .pj-meta { grid-column: auto; max-width: none; }
   .pj-head .pj-meta { order: 2; }
   .pj-cover { aspect-ratio: 4 / 3; margin-top: -24px; }
+  .pj-layers { aspect-ratio: 4 / 3; margin-top: -24px; max-height: none; }
   .pj-gallery { grid-template-columns: 1fr; }
   .pj-nav { gap: 16px; }
 }
@@ -529,6 +557,7 @@ html[data-lang="en"] .pj-body p { letter-spacing: 0; line-height: 1.7; }
   .scroll-cue-line::after { display: none; }
   .about { padding-top: 64px; }
   .pj-cover { aspect-ratio: 21 / 9; }
+  .pj-layers { aspect-ratio: 21 / 9; }
 }
 /* Very narrow (Galaxy Fold cover screen): long English intro a touch tighter */
 @media (max-width: 340px) {

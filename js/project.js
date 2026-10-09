@@ -19,6 +19,65 @@
       '<div class="ph"><span>' + T.esc(T.t('project.cover')) + '</span><span>' + coords(p) + '</span></div></div>';
   }
 
+  /* Stacked full-bleed layers: click reveals the next image on top with a crossfade. */
+  function layers(p) {
+    var srcs = p.layers || [];
+    if (srcs.length < 2) return '';
+    var imgs = srcs.map(function (src, i) {
+      return '<img class="pj-layer" data-i="' + i + '" src="' + T.esc(src) + '" alt=""' +
+        (i === 0 ? '' : ' loading="lazy"') + ' draggable="false">';
+    }).join('');
+    return '' +
+      '<div class="pj-layers" role="button" tabindex="0" aria-label="' + T.esc(T.t('project.layers.hint')) + '" data-step="0" data-n="' + srcs.length + '">' +
+        '<div class="pj-layers-stack">' + imgs + '</div>' +
+        '<div class="pj-layers-ui" aria-hidden="true">' +
+          '<span class="pj-layers-hint">' + T.esc(T.t('project.layers.hint')) + '</span>' +
+          '<span class="pj-layers-count"><b>1</b> / ' + srcs.length + '</span>' +
+        '</div>' +
+      '</div>';
+  }
+
+  function bindLayers(el) {
+    if (!el) return;
+    var n = parseInt(el.getAttribute('data-n'), 10) || 0;
+    var step = 0;
+    var imgs = el.querySelectorAll('.pj-layer');
+    var hint = el.querySelector('.pj-layers-hint');
+    var countB = el.querySelector('.pj-layers-count b');
+    var busy = false;
+
+    function paint() {
+      for (var i = 0; i < imgs.length; i++) {
+        imgs[i].classList.toggle('is-on', i <= step);
+      }
+      if (countB) countB.textContent = String(step + 1);
+      if (hint) hint.textContent = step >= n - 1 ? T.t('project.layers.done') : T.t('project.layers.hint');
+      el.setAttribute('data-step', String(step));
+      el.setAttribute('aria-label', hint ? hint.textContent : '');
+    }
+
+    function advance() {
+      if (busy) return;
+      busy = true;
+      if (step >= n - 1) step = 0;
+      else step += 1;
+      paint();
+      window.setTimeout(function () { busy = false; }, 520);
+    }
+
+    el.addEventListener('click', function (e) {
+      e.preventDefault();
+      advance();
+    });
+    el.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        advance();
+      }
+    });
+    paint();
+  }
+
   function render() {
     var i = -1;
     for (var k = 0; k < all.length; k++) if (all[k].id === id) i = k;
@@ -35,6 +94,7 @@
     var body = (p['body_' + T.lang()] || p.body_zh || []).filter(function (s) { return s && String(s).trim(); });
     var summary = T.field(p, 'summary');
     var gallery = p.gallery || [];
+    var hasLayers = (p.layers || []).length >= 2;
 
     document.title = T.field(p, 'name') + ' · TEKUMA';
     head.innerHTML =
@@ -42,7 +102,7 @@
       '<h1 class="pj-title">' + T.esc(T.field(p, 'name')) + '</h1>' +
       (p.example ? '<span class="pj-sample">' + T.esc(T.t('project.sample')) + '</span>' : '');
     root.innerHTML =
-      cover(p) +
+      (hasLayers ? layers(p) : cover(p)) +
       '<div class="pj-head' + (summary || body.length ? '' : ' is-meta-only') + '">' +
         '<dl class="pj-meta">' +
           (p.service ? row(T.t('project.service'), T.t('service.' + p.service)) : '') +
@@ -56,11 +116,12 @@
           (body.length ? '<div class="pj-body">' + body.map(function (para) { return '<p>' + T.esc(para) + '</p>'; }).join('') + '</div>' : '') +
         '</div>' : '') +
       '</div>' +
-      (gallery.length ? '<div class="pj-gallery">' + gallery.map(function (src) { return '<img src="' + T.esc(src) + '" alt="" loading="lazy">'; }).join('') + '</div>' : '') +
+      (!hasLayers && gallery.length ? '<div class="pj-gallery">' + gallery.map(function (src) { return '<img src="' + T.esc(src) + '" alt="" loading="lazy">'; }).join('') + '</div>' : '') +
       '<nav class="pj-nav">' +
         '<a href="project.html?id=' + encodeURIComponent(prev.id) + '"><small>← ' + T.esc(T.t('project.prev')) + '</small><span>' + T.esc(T.field(prev, 'name')) + '</span></a>' +
         '<a href="project.html?id=' + encodeURIComponent(next.id) + '"><small>' + T.esc(T.t('project.next')) + ' →</small><span>' + T.esc(T.field(next, 'name')) + '</span></a>' +
       '</nav>';
+    bindLayers(root.querySelector('.pj-layers'));
   }
 
   function row(k, v) { return '<div><dt>' + T.esc(k) + '</dt><dd>' + T.esc(v) + '</dd></div>'; }

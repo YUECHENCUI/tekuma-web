@@ -71,6 +71,7 @@ python3 scripts/serve.py          # 然后打开 http://localhost:8000
 | `summary_*` / `body_*` | 详情页简介与正文；留空时详情页只显示封面占位、项目信息与上一/下一项目，不留空白区块 |
 | `country` | 国家代码；全球视图中同一国家 ≥3 个项目时合并为一个标注（如“中国 28”） |
 | `cover` / `gallery` | 图片路径；留空 `""` 时显示占位图 |
+| `layers` | 可选：详情页点击叠层图（有序路径数组，≥2 张）。有 `layers` 时用叠层查看器代替 `cover`/`gallery` |
 | `example` | 可选：`true` 时显示“示例数据”提示（正式数据中不使用） |
 
 > 目前为 Kit 提供的真实项目目录（`brief/projects.xlsx` 及 Kit 后续增删，159 个地图点位）。点位核对过程与依据见仓库外的 `data-work/` 与《TEKUMA项目点位核对表.xlsx》；简介、正文、服务类别与图片待补充。
